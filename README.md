@@ -1,8 +1,12 @@
 ## Blueprint Message Plugin for Unreal Engine
 
-Blueprint Message Plugin created to provide an easy bridge between Blueprints and Message Log. 
+Are you still printing plain text to output? Discover Message Log! Create rich interactive messages with different contents with little of blueprint.
 
-Each Message Log message represented by sequence of tokens that can be interacted with.
+Blueprint Message Plugin provides an easy bridge between Blueprints and Message Log API to open an era of interactive logging! 
+
+Each Message Log message represented by sequence of tokens that can be interacted with: hyperlinks, references, actions, images.
+
+Note: plugin is at experimental stage, things may change a lot.
 
 ## Features
 
@@ -26,6 +30,26 @@ Each Message Log message represented by sequence of tokens that can be interacte
 ## Unreal Engine Versions
 
 Tested with 5.0, ue5-main and can be modified to work with other engine versions.
+
+## Examples
+
+Minimal "Hello World"
+![](Images/BMP-HelloWorld.png)
+
+A simple message with reference to actor in world
+![](Images/BMP-ActorToken.png)
+
+A simple message with executable action (in PIE only)
+![](Images/BMP-ActionToken.png)
+
+A simple message to prompt activation of Editor Utility Widget
+![](Images/BMP-EditorUtilityToken.png)
+
+A simple usage example of message slots
+![](Images/BMP-Slots.png)
+
+Result:
+![](Images/BMP-MessageLog.png)
 
 ## Contributing
 

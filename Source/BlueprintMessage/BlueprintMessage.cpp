@@ -46,11 +46,8 @@ void UBlueprintMessage::AddToken(const FBlueprintMessageToken& Token, FName Slot
 		SlotPtr->Data = Token.Data;
 	}
 	else
-	{
-		FFrame::KismetExecutionMessage(
-			*FString::Printf(TEXT("InitialMessage %s does not have slot with name %s."), *GetName(), *Slot.ToString()),
-			ELogVerbosity::Warning
-		);
+	{ // Add new token with slot identifier
+		Tokens.Add_GetRef(Token).Name = Slot;
 	}
 }
 
