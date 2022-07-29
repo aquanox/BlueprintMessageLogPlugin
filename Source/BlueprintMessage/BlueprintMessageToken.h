@@ -110,6 +110,8 @@ public:
 	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
 	static FBlueprintMessageToken CreateAssetPathToken(FSoftObjectPath Value, FText Message = INVTEXT(""));
 
+	static FBlueprintMessageToken CreateAssetPathToken_Internal(FString AssetPath, FText Message);
+
 	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
 	static FBlueprintMessageToken CreateImageToken(FName Value);
 
@@ -132,6 +134,6 @@ public:
 	static FBlueprintMessageToken CreateActionToken(FText Name, FText Description, const FBlueprintMessageActionDelegate& Action, bool bInSingleUse = false);
 
 	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
-	static FBlueprintMessageToken CreateEditorUtilityWidgetToken(TSoftObjectPtr<UEditorUtilityWidgetBlueprint> Widget, FText Description);
+	static FBlueprintMessageToken CreateEditorUtilityWidgetToken(UPARAM(meta=(AllowedClasses="EditorUtilityWidgetBlueprint")) TSoftObjectPtr<UBlueprint> Widget, FText Description);
 
 };
