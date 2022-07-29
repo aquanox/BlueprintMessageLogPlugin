@@ -4,6 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+
+#if WITH_EDITOR
+#include "EditorUtilityObject.h"
+#include "EditorUtilitySubsystem.h"
+#include "EditorUtilityWidget.h"
+#include "EditorUtilityWidgetBlueprint.h"
+#endif
+
 #include "BlueprintMessageToken.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE_RetVal(FText, FGetMessageDynamicText);
@@ -122,4 +130,8 @@ public:
 
 	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
 	static FBlueprintMessageToken CreateActionToken(FText Name, FText Description, const FBlueprintMessageActionDelegate& Action, bool bInSingleUse = false);
+
+	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
+	static FBlueprintMessageToken CreateEditorUtilityWidgetToken(TSoftObjectPtr<UEditorUtilityWidgetBlueprint> Widget, FText Description);
+
 };

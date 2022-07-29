@@ -43,6 +43,12 @@ public:
 	/* constructor */
 	UBlueprintMessage();
 
+	/**
+	 * Duplicate message and return its copy
+	 */
+	UFUNCTION(BlueprintCallable)
+	UBlueprintMessage* Duplicate();
+
 	/* Add token to this message */
 	UFUNCTION(BlueprintCallable, meta=(AutoCreateRefTerm="Token"))
 	void AddToken(const FBlueprintMessageToken& Token, FName Slot = TEXT(""));

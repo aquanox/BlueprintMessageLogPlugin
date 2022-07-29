@@ -8,7 +8,7 @@
 #include "K2Node_CreateBlueprintMessage.generated.h"
 
 /**
- *
+ * A universal CreateBlueprintMessage with expandable AddToken pins
  */
 UCLASS(MinimalAPI)
 class UK2Node_CreateBlueprintMessage : public UK2Node_CallFunction

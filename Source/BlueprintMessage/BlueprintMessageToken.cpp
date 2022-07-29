@@ -114,9 +114,10 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateDocumentationToken(F
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateDynamicTextToken_Delegate(FGetMessageDynamicText Value)
 {
-	TAttribute<FText> Attribute;
-	Attribute.BindUFunction(Value.GetUObject(), Value.GetFunctionName());
-	return FBlueprintMessageToken(FDynamicTextToken::Create(Attribute));
+	return FBlueprintMessageToken(FDynamicTextToken::Create(MakeAttributeLambda([Value]()
+	{
+		return Value.IsBound() ? Value.Execute() : FText::GetEmpty();
+	})));
 }
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateDynamicTextToken_Function(UObject* Object, FName FunctionName)
@@ -128,12 +129,31 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateDynamicTextToken_Fun
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateActionToken(FText Name, FText Description, const FBlueprintMessageActionDelegate& Action, bool bInSingleUse)
 {
-	FOnActionTokenExecuted Delegate;
-	Delegate.BindLambda([Action]()
-	{
-		Action.ExecuteIfBound();
-	});
 	return FBlueprintMessageToken(
-		FActionToken::Create(Name, Description, Delegate, bInSingleUse)
+		FActionToken::Create(Name, Description, FOnActionTokenExecuted::CreateLambda([Action]()
+		{
+			if (Action.IsBound())
+			{
+				Action.Execute();
+			}
+		}), bInSingleUse)
+	);
+}
+
+FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateEditorUtilityWidgetToken(TSoftObjectPtr<UEditorUtilityWidgetBlueprint> Widget, FText Description)
+{
+	FText ActionName = FText::FromString(Widget.GetAssetName());
+
+	return FBlueprintMessageToken(
+		FActionToken::Create(ActionName, Description, FOnActionTokenExecuted::CreateLambda([Widget]()
+		{
+			if (UObject* WidgetClass = Widget.LoadSynchronous())
+			{
+				if (UEditorUtilityWidgetBlueprint* EditorWidget = Cast<UEditorUtilityWidgetBlueprint>(WidgetClass))
+				{
+					GEditor->GetEditorSubsystem<UEditorUtilitySubsystem>()->SpawnAndRegisterTab(EditorWidget);
+				}
+			}
+		}), false)
 	);
 }

@@ -15,15 +15,20 @@ UBlueprintMessage* UBlueprintMessage::CreateBlueprintMessage(FName LogCategory, 
 
 UBlueprintMessage* UBlueprintMessage::CreateBlueprintMessageFromTokens(FName Category, EBlueprintMessageSeverity Severity, TArray<FBlueprintMessageToken> Tokens)
 {
-	UBlueprintMessage* Object = NewObject<UBlueprintMessage>(GetTransientPackage(), UBlueprintMessage::StaticClass(), NAME_None, RF_Transient|RF_DuplicateTransient);
-	Object->Category = Category;
-	Object->Severity = Severity;
+	UBlueprintMessage* Object = CreateBlueprintMessage(Category, Severity, FText::GetEmpty());
 	Object->AddTokens(Tokens);
 	return Object;
 }
 
 UBlueprintMessage::UBlueprintMessage()
 {
+}
+
+UBlueprintMessage* UBlueprintMessage::Duplicate()
+{
+	UBlueprintMessage* Object = CreateBlueprintMessage(Category, Severity, InitialMessage);
+	Object->Tokens = Tokens;
+	return Object;
 }
 
 void UBlueprintMessage::AddToken(const FBlueprintMessageToken& Token, FName Slot)

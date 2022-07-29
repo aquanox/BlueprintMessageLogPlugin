@@ -8,7 +8,11 @@
 #include "K2Node_AddBlueprintMessageToken.generated.h"
 
 /**
+ * Dynamic Create Token + Add Token combo
  *
+ * Generate pin for Message
+ * Generate pin for Create*Token
+ * Generate output pin for Message
  */
 UCLASS(MinimalAPI)
 class UK2Node_AddBlueprintMessageToken : public UK2Node_CallFunction
