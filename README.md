@@ -8,17 +8,18 @@ Each Message Log message represented by sequence of tokens that can be interacte
 
  * Blueprint wrapper of Message Log API
  * Blueprint wrappers for tokens:
-   * FTextToken
-   * FURLToken
-   * FSeverityToken
-   * FUObjectToken
-   * FActorToken
-   * FAssetNameToken
-   * FImageToken
-   * FTutorialToken
-   * FDocumentationToken
+   * FTextToken - plain text
+   * FURLToken - hyperlink
+   * FSeverityToken - message severity switch
+   * FUObjectToken - reference to UObject
+   * FActorToken - reference to Actor
+   * FAssetNameToken - reference to Asset
+   * FImageToken - image 
+   * FTutorialToken - reference to tutorial asset
+   * FDocumentationToken - reference to documentation 
    * FDynamicTextToken (Soon...)
    * FActionToken (Soon...)
+   * FEditorUtilityToken - reference to Blutility Widget/Action/Task
  * Message Slots - reserve a spot and fill it with token afterwards!
  * Custom blueprint graph nodes for Create Message and Add Token (Soon...)
 

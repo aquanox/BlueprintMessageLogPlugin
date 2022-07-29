@@ -2,11 +2,10 @@
 
 using UnrealBuildTool;
 
-public class BlueprintMessage : ModuleRules
+public class BlueprintMessageEditor : ModuleRules
 {
-	public BlueprintMessage(ReadOnlyTargetRules Target) : base(Target)
+	public BlueprintMessageEditor(ReadOnlyTargetRules Target) : base(Target)
 	{
-
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		// Disable private/public structure
@@ -25,15 +24,10 @@ public class BlueprintMessage : ModuleRules
 			"Engine"
 		});
 
-		if (Target.bBuildEditor)
+		PrivateDependencyModuleNames.AddRange(new string[]
 		{
-			PrivateDependencyModuleNames.AddRange(new string[]
-			{
-				"UnrealEd",
-				"UMG",
-				"UMGEditor",
-				"Blutility"
-			});
-		}
+			"BlueprintMessage",
+			"BlueprintGraph"
+		});
 	}
 }

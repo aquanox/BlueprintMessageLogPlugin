@@ -19,6 +19,8 @@
 //  FEdGraphToken | special
 //  FNiagaraCompileEventToken | special
 
+const FBlueprintMessageToken FBlueprintMessageToken::EMPTY_TOKEN;
+
 FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateSlotToken(FName Value)
 {
 	return FBlueprintMessageToken(Value);
@@ -39,16 +41,9 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateNameToken(FName Valu
 	return FBlueprintMessageToken(FTextToken::Create(FText::FromName(Value)));
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateDynamicText(FGetMessageDynamicText Value)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateUrlToken(FString Value, FText Message)
 {
-	TAttribute<FText> Attribute;
-	Attribute.BindUFunction(Value.GetUObject(), Value.GetFunctionName());
-	return FBlueprintMessageToken(FDynamicTextToken::Create(Attribute));
-}
-
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateUrlToken(FString Value, FText DisplayText)
-{
-	return FBlueprintMessageToken(FURLToken::Create(Value, DisplayText));
+	return FBlueprintMessageToken(FURLToken::Create(Value, Message));
 }
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateSeverityToken(EBlueprintMessageSeverity Value)
@@ -63,14 +58,30 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateObjectToken(UObject*
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateAssetToken(UObject* Value, FText Message)
 {
-	FString InAssetName = Value ? Value->GetPathName() : TEXT("Unknown");
-	Message = Message.IsEmpty() ? FText::FromString(GetNameSafe(Value)) : Message;
-	return FBlueprintMessageToken(FAssetNameToken::Create(InAssetName, Message));
+	if (UClass* const AsClass = Cast<UClass>(Value))
+		return CreateAssetPathToken(FSoftClassPath(AsClass), Message);
+	else
+		return CreateAssetPathToken(FSoftObjectPath(Value), Message);
+}
+
+FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateAssetSoftPtrToken(TSoftObjectPtr<UObject> Value, FText Message)
+{
+	return CreateAssetPathToken(Value.ToSoftObjectPath(), Message);
+}
+
+FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateClassSoftPtrToken(TSoftClassPtr<> Value, FText Message)
+{
+	return CreateAssetPathToken(Value.ToSoftObjectPath(), Message);
+}
+
+FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateClassPathToken(FSoftClassPath Value, FText Message)
+{
+	return CreateAssetPathToken(Value, Message);
 }
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateAssetPathToken(FSoftObjectPath Value, FText Message)
 {
-	FString InAssetName = !Value.IsNull() ? Value.ToString() : TEXT("Null");
+	FString InAssetName = !Value.IsNull() ? Value.ToString() : TEXT("Unknown");
 	Message = Message.IsEmpty() ? FText::FromString(Value.GetAssetName()) : Message;
 	return FBlueprintMessageToken(FAssetNameToken::Create(InAssetName, Message));
 }
@@ -83,22 +94,46 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateImageToken(FName Val
 FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateActorToken(AActor* Value, FText Message)
 {
 	FString ActorPath = Value ? Value->GetPathName() : FString();
-	FGuid Guid = Value ? Value->GetActorGuid() : FGuid();
+	FGuid Guid;
 	Message = Message.IsEmpty() && Value ? FText::FromString(Value->GetActorNameOrLabel()) : Message;
+#if WITH_EDITOR
+	Guid = Value ? Value->GetActorGuid() : FGuid();
+#endif
 	return FBlueprintMessageToken(FActorToken::Create(ActorPath, Guid, Message));
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateTutorialToken(FString TutorialAssetName)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateTutorialToken(FString Value)
 {
-	return FBlueprintMessageToken(FTutorialToken::Create(TutorialAssetName));
+	return FBlueprintMessageToken(FTutorialToken::Create(Value));
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateDocumentationToken(FString DocumentationLink)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateDocumentationToken(FString Value)
 { // Engine/Animation/AnimBlueprints/AnimGraph
-	return FBlueprintMessageToken(FDocumentationToken::Create(DocumentationLink));
+	return FBlueprintMessageToken(FDocumentationToken::Create(Value));
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateActionToken(FText ActionName, FText ActionDescription, const FBlueprintMessageActionDelegate& Action, bool bInSingleUse)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateDynamicTextToken_Delegate(FGetMessageDynamicText Value)
 {
-	return FBlueprintMessageToken(FActionToken::Create(ActionName, ActionDescription, nullptr, bInSingleUse));
+	TAttribute<FText> Attribute;
+	Attribute.BindUFunction(Value.GetUObject(), Value.GetFunctionName());
+	return FBlueprintMessageToken(FDynamicTextToken::Create(Attribute));
+}
+
+FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateDynamicTextToken_Function(UObject* Object, FName FunctionName)
+{
+	TAttribute<FText> Attribute;
+	Attribute.BindUFunction(Object, FunctionName);
+	return FBlueprintMessageToken(FDynamicTextToken::Create(Attribute));
+}
+
+FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateActionToken(FText Name, FText Description, const FBlueprintMessageActionDelegate& Action, bool bInSingleUse)
+{
+	FOnActionTokenExecuted Delegate;
+	Delegate.BindLambda([Action]()
+	{
+		Action.ExecuteIfBound();
+	});
+	return FBlueprintMessageToken(
+		FActionToken::Create(Name, Description, Delegate, bInSingleUse)
+	);
 }

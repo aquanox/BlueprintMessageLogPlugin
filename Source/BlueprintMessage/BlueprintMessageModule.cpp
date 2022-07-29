@@ -2,4 +2,21 @@
 
 #include "Modules/ModuleManager.h"
 
-IMPLEMENT_MODULE(FDefaultModuleImpl, BlueprintMessage);
+class FBlueprintMessageModule : public FDefaultModuleImpl
+{
+public:
+	virtual void StartupModule() override;
+	virtual void ShutdownModule() override;
+};
+
+IMPLEMENT_MODULE(FBlueprintMessageModule, BlueprintMessage);
+
+void FBlueprintMessageModule::StartupModule()
+{
+	FDefaultModuleImpl::StartupModule();
+}
+
+void FBlueprintMessageModule::ShutdownModule()
+{
+	FDefaultModuleImpl::ShutdownModule();
+}

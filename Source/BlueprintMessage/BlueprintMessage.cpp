@@ -4,14 +4,26 @@
 
 #include "Kismet/KismetSystemLibrary.h"
 
-UBlueprintMessage* UBlueprintMessage::CreateBlueprintMessage(const UObject* WorldContextObject, FName Category, EBlueprintMessageSeverity Severity, FText Message)
+UBlueprintMessage* UBlueprintMessage::CreateBlueprintMessage(FName LogCategory, EBlueprintMessageSeverity Severity, FText Message)
 {
-	UBlueprintMessage* Object = NewObject<UBlueprintMessage>(GetTransientPackage());
-	Object->WorldContext = const_cast<UObject*>(WorldContextObject);
-	Object->Category = Category.IsNone() ? TEXT("BlueprintLog") : Category;
+	UBlueprintMessage* Object = NewObject<UBlueprintMessage>(GetTransientPackage(), UBlueprintMessage::StaticClass(), NAME_None, RF_Transient|RF_DuplicateTransient);
+	Object->Category = LogCategory;
 	Object->Severity = Severity;
 	Object->InitialMessage = Message;
 	return Object;
+}
+
+UBlueprintMessage* UBlueprintMessage::CreateBlueprintMessageFromTokens(FName Category, EBlueprintMessageSeverity Severity, TArray<FBlueprintMessageToken> Tokens)
+{
+	UBlueprintMessage* Object = NewObject<UBlueprintMessage>(GetTransientPackage(), UBlueprintMessage::StaticClass(), NAME_None, RF_Transient|RF_DuplicateTransient);
+	Object->Category = Category;
+	Object->Severity = Severity;
+	Object->AddTokens(Tokens);
+	return Object;
+}
+
+UBlueprintMessage::UBlueprintMessage()
+{
 }
 
 void UBlueprintMessage::AddToken(const FBlueprintMessageToken& Token, FName Slot)
@@ -68,21 +80,27 @@ void UBlueprintMessage::ClearTokens()
 
 void UBlueprintMessage::Show()
 {
-	FMessageLog(Category).AddMessage(BuildMessage());
+#if WITH_EDITOR
+	FName ActualCategory = Category.IsNone() ? TEXT("BlueprintLog") : Category;
+	FMessageLog(ActualCategory).AddMessage(BuildMessage());
+#endif
 }
 
 void UBlueprintMessage::ShowAndPrint(bool bPrintToScreen, bool bPrintToLog, FLinearColor TextColor, float Duration, const FName Key)
 {
+#if WITH_EDITOR
 	auto MessagePtr = BuildMessage();
 
-	FMessageLog(Category).AddMessage(MessagePtr);
+	FName ActualCategory = Category.IsNone() ? TEXT("BlueprintLog") : Category;
+	FMessageLog(ActualCategory).AddMessage(MessagePtr);
 
 	FString LongMessage;
-	LongMessage.Append(Category.ToString());
+	LongMessage.Append(ActualCategory.ToString());
 	LongMessage.Append(TEXT(": "));
 	LongMessage.Append(MessagePtr->ToText().ToString());
 
-	UKismetSystemLibrary::PrintText(WorldContext.Get(), FText::FromString(LongMessage), bPrintToScreen, bPrintToLog, TextColor, Duration, Key);
+	UKismetSystemLibrary::PrintText(nullptr, FText::FromString(LongMessage), bPrintToScreen, bPrintToLog, TextColor, Duration, Key);
+#endif
 }
 
 TSharedRef<FTokenizedMessage> UBlueprintMessage::BuildMessage() const
@@ -105,7 +123,6 @@ TSharedRef<FTokenizedMessage> UBlueprintMessage::BuildMessage() const
 	return MessagePtr;
 }
 
-
 void UBlueprintMessage::AddTextToken(FText Value, FName Slot)
 {
 	AddToken(UBlueprintMessageTokenFactory::CreateTextToken(Value), Slot);
@@ -121,14 +138,9 @@ void UBlueprintMessage::AddNameToken(FName Value, FName Slot)
 	AddToken(UBlueprintMessageTokenFactory::CreateNameToken(Value), Slot);
 }
 
-void UBlueprintMessage::AddDynamicTextToken(FGetMessageDynamicText Value, FName Slot)
+void UBlueprintMessage::AddURLToken(FString Value, FText Label, FName Slot)
 {
-	AddToken(UBlueprintMessageTokenFactory::CreateDynamicText(Value), Slot);
-}
-
-void UBlueprintMessage::AddURLToken(FString Value, FText DisplayText, FName Slot)
-{
-	AddToken(UBlueprintMessageTokenFactory::CreateUrlToken(Value, DisplayText), Slot);
+	AddToken(UBlueprintMessageTokenFactory::CreateUrlToken(Value, Label), Slot);
 }
 
 void UBlueprintMessage::AddSeverityToken(EBlueprintMessageSeverity Value, FName Slot)
@@ -144,6 +156,11 @@ void UBlueprintMessage::AddObjectToken(UObject* Value, FText Label, FName Slot)
 void UBlueprintMessage::AddAssetToken(UObject* Value, FText Message, FName Slot)
 {
 	AddToken(UBlueprintMessageTokenFactory::CreateAssetToken(Value, Message), Slot);
+}
+
+void UBlueprintMessage::AddAssetSoftPtrToken(TSoftObjectPtr<UObject> Value, FText Message, FName Slot)
+{
+	AddToken(UBlueprintMessageTokenFactory::CreateAssetSoftPtrToken(Value, Message), Slot);
 }
 
 void UBlueprintMessage::AddAssetPathToken(FSoftObjectPath Value, FText Message, FName Slot)
@@ -169,4 +186,14 @@ void UBlueprintMessage::AddTutorialToken(FString TutorialAssetName, FName Slot)
 void UBlueprintMessage::AddDocumentationToken(FString DocumentationLink, FName Slot)
 {
 	AddToken(UBlueprintMessageTokenFactory::CreateDocumentationToken(DocumentationLink), Slot);
+}
+
+void UBlueprintMessage::AddDynamicTextToken_Delegate(FGetMessageDynamicText Value, FName Slot)
+{
+	AddToken(UBlueprintMessageTokenFactory::CreateDynamicTextToken_Delegate(Value), Slot);
+}
+
+void UBlueprintMessage::AddDynamicTextToken_Function(UObject* Object, FName FunctionName, FName Slot)
+{
+	AddToken(UBlueprintMessageTokenFactory::CreateDynamicTextToken_Function(Object, FunctionName), Slot);
 }

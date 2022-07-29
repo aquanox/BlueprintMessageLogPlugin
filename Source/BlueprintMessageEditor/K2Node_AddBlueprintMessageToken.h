@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "K2Node.h"
+#include "K2Node_CallFunction.h"
 #include "K2Node_AddBlueprintMessageToken.generated.h"
 
 /**
  *
  */
-UCLASS()
-class BLUEPRINTMESSAGE_API UK2Node_AddBlueprintMessageToken : public UK2Node
+UCLASS(MinimalAPI)
+class UK2Node_AddBlueprintMessageToken : public UK2Node_CallFunction
 {
 	GENERATED_BODY()
 };
