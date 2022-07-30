@@ -20,25 +20,27 @@ public:
 
 	/**
 	 * Construct new message instance
+	 * Internal use only
+	 *
+	 * @param LogCategory message log category for this message
+	 * @param Severity severity of this message
+	 * @returns message instance
+	 */
+	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage", meta=(LogCategory = "BlueprintLog", Severity="EBlueprintMessageSeverity::Info", BlueprintInternalUseOnly=true))
+	static UBlueprintMessage* CreateBlueprintMessage(UPARAM(DisplayName="Category") FName LogCategory, EBlueprintMessageSeverity Severity);
+
+	/**
+	 * Construct new message instance with initial text
 	 *
 	 * @param LogCategory message log category for this message
 	 * @param Severity severity of this message
 	 * @param Message initial message to add
+	 * @param bShow trigger show right after creation
 	 * @returns message instance
 	 */
-	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage", meta=(DevelopmentOnly))
-	static UBlueprintMessage* CreateBlueprintMessage(UPARAM(DisplayName="Category") FName LogCategory = TEXT("BlueprintLog"), EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info, FText Message = INVTEXT(""));
+	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage", meta=(DevelopmentOnly, AdvancedDisplay=3))
+	static UBlueprintMessage* CreateSimpleBlueprintMessage(UPARAM(DisplayName="Category") FName LogCategory = TEXT("BlueprintLog"), EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info, FText Message = INVTEXT(""), bool bShow = false);
 
-	/**
-	 * Construct new message instance from array of tokens
-	 *
-	 * @param Category message log category for this message
-	 * @param Severity severity of this message
-	 * @param Tokens array of tokens
-	 * @returns message instance
-	 */
-	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage", meta=(AutoCreateRefTerm="Tokens", LogCategory = "BlueprintLog", Severity="EBlueprintMessageSeverity::Info", DevelopmentOnly))
-	static UBlueprintMessage* CreateBlueprintMessageFromTokens(FName Category, EBlueprintMessageSeverity Severity, TArray<FBlueprintMessageToken> Tokens);
 
 	/* constructor */
 	UBlueprintMessage();

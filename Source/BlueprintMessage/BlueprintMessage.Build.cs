@@ -10,6 +10,7 @@ public class BlueprintMessage : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		// Disable private/public structure
+		PublicIncludePaths.Add(ModuleDirectory);
 		PrivateIncludePaths.Add(ModuleDirectory);
 
 		if (Target.Configuration == UnrealTargetConfiguration.DebugGame)
@@ -30,7 +31,6 @@ public class BlueprintMessage : ModuleRules
 			PrivateDependencyModuleNames.AddRange(new string[]
 			{
 				"UnrealEd",
-				"UMG",
 				"UMGEditor",
 				"Blutility"
 			});

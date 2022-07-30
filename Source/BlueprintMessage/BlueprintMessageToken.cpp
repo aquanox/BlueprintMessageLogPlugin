@@ -4,6 +4,12 @@
 #include "Logging/TokenizedMessage.h"
 #include "Misc/UObjectToken.h"
 
+#if WITH_EDITOR
+#include "EditorUtilitySubsystem.h"
+#include "EditorUtilityWidget.h"
+#include "EditorUtilityWidgetBlueprint.h"
+#endif
+
 // IMessageToken
 //  FTextToken | implemented
 //  FDynamicTextToken | implemented
@@ -21,86 +27,86 @@
 
 const FBlueprintMessageToken FBlueprintMessageToken::EMPTY_TOKEN;
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateSlotToken(FName Value)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeSlotToken(FName Value)
 {
 	return FBlueprintMessageToken(Value);
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateTextToken(FText Value)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeTextToken(FText Value)
 {
 	return FBlueprintMessageToken(FTextToken::Create(Value));
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateStringToken(FString Value)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeStringToken(FString Value)
 {
 	return FBlueprintMessageToken(FTextToken::Create(FText::FromString(Value)));
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateNameToken(FName Value)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeNameToken(FName Value)
 {
 	return FBlueprintMessageToken(FTextToken::Create(FText::FromName(Value)));
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateUrlToken(FString Value, FText Message)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeUrlToken(FString Value, FText Message)
 {
 	return FBlueprintMessageToken(FURLToken::Create(Value, Message));
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateSeverityToken(EBlueprintMessageSeverity Value)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeSeverityToken(EBlueprintMessageSeverity Value)
 {
 	return FBlueprintMessageToken(FSeverityToken::Create(static_cast<EMessageSeverity::Type>(Value)));
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateObjectToken(UObject* Value, FText Label)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeObjectToken(UObject* Value, FText Label)
 {
 	return FBlueprintMessageToken(FUObjectToken::Create(Value, Label));
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateAssetToken(UObject* Value, FText Message)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeAssetToken(UObject* Value, FText Message)
 {
 	if (UClass* const AsClass = Cast<UClass>(Value))
 	{
-		return CreateClassPathToken(FSoftClassPath(AsClass), Message);
+		return MakeClassPathToken(FSoftClassPath(AsClass), Message);
 	}
 	else
 	{
-		return CreateAssetPathToken(FSoftObjectPath(Value), Message);
+		return MakeAssetPathToken(FSoftObjectPath(Value), Message);
 	}
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateAssetSoftPtrToken(TSoftObjectPtr<UObject> Value, FText Message)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeAssetSoftPtrToken(TSoftObjectPtr<UObject> Value, FText Message)
 {
-	return CreateAssetPathToken(Value.ToSoftObjectPath(), Message);
+	return MakeAssetPathToken(Value.ToSoftObjectPath(), Message);
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateClassSoftPtrToken(TSoftClassPtr<UObject> Value, FText Message)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeClassSoftPtrToken(TSoftClassPtr<UObject> Value, FText Message)
 {
-	return CreateAssetPathToken(Value.ToSoftObjectPath(), Message);
+	return MakeAssetPathToken(Value.ToSoftObjectPath(), Message);
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateClassPathToken(FSoftClassPath Value, FText Message)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeClassPathToken(FSoftClassPath Value, FText Message)
 {
-	return CreateAssetPathToken(Value, Message);
+	return MakeAssetPathToken(Value, Message);
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateAssetPathToken(FSoftObjectPath Value, FText Message)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeAssetPathToken(FSoftObjectPath Value, FText Message)
 {
 	FString InAssetName = !Value.IsNull() ? Value.ToString() : TEXT("Unknown");
-	return CreateAssetPathToken_Internal(InAssetName, Message);
+	return MakeAssetPathToken_Internal(InAssetName, Message);
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateAssetPathToken_Internal(FString AssetPath, FText Message)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeAssetPathToken_Internal(FString AssetPath, FText Message)
 {
 	Message = Message.IsEmpty() ? FText::FromString(FPackageName::GetShortName(AssetPath)) : Message;
 	return FBlueprintMessageToken(FAssetNameToken::Create(AssetPath, Message));
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateImageToken(FName Value)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeImageToken(FName Value)
 { // FAppStyle::Get().GetBrush(ImageToken->GetImageName())
 	return FBlueprintMessageToken(FImageToken::Create(Value));
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateActorToken(AActor* Value, FText Message)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeActorToken(AActor* Value, FText Message)
 {
 	FString ActorPath = Value ? Value->GetPathName() : FString();
 	FGuid Guid;
@@ -111,17 +117,17 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateActorToken(AActor* V
 	return FBlueprintMessageToken(FActorToken::Create(ActorPath, Guid, Message));
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateTutorialToken(FString Value)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeTutorialToken(FString Value)
 {
 	return FBlueprintMessageToken(FTutorialToken::Create(Value));
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateDocumentationToken(FString Value)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeDocumentationToken(FString Value)
 { // Engine/Animation/AnimBlueprints/AnimGraph
 	return FBlueprintMessageToken(FDocumentationToken::Create(Value));
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateDynamicTextToken_Delegate(FGetMessageDynamicText Value)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeDynamicTextToken_Delegate(FGetMessageDynamicText Value)
 {
 	return FBlueprintMessageToken(FDynamicTextToken::Create(MakeAttributeLambda([Value]()
 	{
@@ -129,14 +135,14 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateDynamicTextToken_Del
 	})));
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateDynamicTextToken_Function(UObject* Object, FName FunctionName)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeDynamicTextToken_Function(UObject* Object, FName FunctionName)
 {
 	TAttribute<FText> Attribute;
 	Attribute.BindUFunction(Object, FunctionName);
 	return FBlueprintMessageToken(FDynamicTextToken::Create(Attribute));
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateActionToken(FText Name, FText Description, const FBlueprintMessageActionDelegate& Action, bool bInSingleUse)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeActionToken(FText Name, FText Description, const FBlueprintMessageActionDelegate& Action, bool bInSingleUse)
 {
 	return FBlueprintMessageToken(
 		FActionToken::Create(Name, Description, FOnActionTokenExecuted::CreateLambda([Action]()
@@ -149,10 +155,13 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateActionToken(FText Na
 	);
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::CreateEditorUtilityWidgetToken(TSoftObjectPtr<UBlueprint> Widget, FText Description)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeEditorUtilityWidgetToken(TSoftObjectPtr<UBlueprint> Widget, FText ActionName, FText Description)
 {
 #if WITH_EDITOR
-	FText ActionName = FText::FromString(Widget.GetAssetName());
+	const FString WidgetAssetName = Widget.GetAssetName();
+
+	ActionName = !(ActionName.IsEmpty()) ? ActionName
+				: !WidgetAssetName.IsEmpty() ? FText::FromString(WidgetAssetName) : INVTEXT("Action");
 
 	return FBlueprintMessageToken(
 		FActionToken::Create(ActionName, Description, FOnActionTokenExecuted::CreateLambda([Widget]()

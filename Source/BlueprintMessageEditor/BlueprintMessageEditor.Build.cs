@@ -21,13 +21,18 @@ public class BlueprintMessageEditor : ModuleRules
 		{
 			"Core",
 			"CoreUObject",
-			"Engine"
+			"Engine",
+			"Slate",
+			"SlateCore"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
+			"UnrealEd",
+			"KismetCompiler",
 			"BlueprintMessage",
-			"BlueprintGraph"
+			"BlueprintGraph",
+			"ToolMenus"
 		});
 	}
 }

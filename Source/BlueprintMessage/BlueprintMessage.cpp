@@ -4,19 +4,21 @@
 
 #include "Kismet/KismetSystemLibrary.h"
 
-UBlueprintMessage* UBlueprintMessage::CreateBlueprintMessage(FName LogCategory, EBlueprintMessageSeverity Severity, FText Message)
+UBlueprintMessage* UBlueprintMessage::CreateBlueprintMessage(FName Category, EBlueprintMessageSeverity Severity)
+{
+	return CreateSimpleBlueprintMessage(Category, Severity, FText::GetEmpty(), false);
+}
+
+UBlueprintMessage* UBlueprintMessage::CreateSimpleBlueprintMessage(FName LogCategory, EBlueprintMessageSeverity Severity, FText Message, bool bCallShow)
 {
 	UBlueprintMessage* Object = NewObject<UBlueprintMessage>(GetTransientPackage(), UBlueprintMessage::StaticClass(), NAME_None, RF_Transient|RF_DuplicateTransient);
 	Object->Category = LogCategory;
 	Object->Severity = Severity;
 	Object->InitialMessage = Message;
-	return Object;
-}
-
-UBlueprintMessage* UBlueprintMessage::CreateBlueprintMessageFromTokens(FName Category, EBlueprintMessageSeverity Severity, TArray<FBlueprintMessageToken> Tokens)
-{
-	UBlueprintMessage* Object = CreateBlueprintMessage(Category, Severity, FText::GetEmpty());
-	Object->AddTokens(Tokens);
+	if (bCallShow)
+	{
+		Object->Show();
+	}
 	return Object;
 }
 
@@ -26,7 +28,7 @@ UBlueprintMessage::UBlueprintMessage()
 
 UBlueprintMessage* UBlueprintMessage::Duplicate()
 {
-	UBlueprintMessage* Object = CreateBlueprintMessage(Category, Severity, InitialMessage);
+	UBlueprintMessage* Object = CreateSimpleBlueprintMessage(Category, Severity, InitialMessage);
 	Object->Tokens = Tokens;
 	return Object;
 }
@@ -61,7 +63,7 @@ void UBlueprintMessage::AddTokens(const TArray<FBlueprintMessageToken>& InTokens
 
 void UBlueprintMessage::AddSlot(FName Slot)
 {
-	AddToken(UBlueprintMessageTokenFactory::CreateSlotToken(Slot));
+	AddToken(UBlueprintMessageTokenFactory::MakeSlotToken(Slot));
 }
 
 void UBlueprintMessage::RemoveSlot(FName Name)
@@ -127,75 +129,75 @@ TSharedRef<FTokenizedMessage> UBlueprintMessage::BuildMessage() const
 
 void UBlueprintMessage::AddTextToken(FText Value, FName Slot)
 {
-	AddToken(UBlueprintMessageTokenFactory::CreateTextToken(Value), Slot);
+	AddToken(UBlueprintMessageTokenFactory::MakeTextToken(Value), Slot);
 }
 
 void UBlueprintMessage::AddStringToken(FString Value, FName Slot)
 {
-	AddToken(UBlueprintMessageTokenFactory::CreateStringToken(Value), Slot);
+	AddToken(UBlueprintMessageTokenFactory::MakeStringToken(Value), Slot);
 }
 
 void UBlueprintMessage::AddNameToken(FName Value, FName Slot)
 {
-	AddToken(UBlueprintMessageTokenFactory::CreateNameToken(Value), Slot);
+	AddToken(UBlueprintMessageTokenFactory::MakeNameToken(Value), Slot);
 }
 
 void UBlueprintMessage::AddURLToken(FString Value, FText Label, FName Slot)
 {
-	AddToken(UBlueprintMessageTokenFactory::CreateUrlToken(Value, Label), Slot);
+	AddToken(UBlueprintMessageTokenFactory::MakeUrlToken(Value, Label), Slot);
 }
 
 void UBlueprintMessage::AddSeverityToken(EBlueprintMessageSeverity Value, FName Slot)
 {
-	AddToken(UBlueprintMessageTokenFactory::CreateSeverityToken(Value), Slot);
+	AddToken(UBlueprintMessageTokenFactory::MakeSeverityToken(Value), Slot);
 }
 
 void UBlueprintMessage::AddObjectToken(UObject* Value, FText Label, FName Slot)
 {
-	AddToken(UBlueprintMessageTokenFactory::CreateObjectToken(Value, Label), Slot);
+	AddToken(UBlueprintMessageTokenFactory::MakeObjectToken(Value, Label), Slot);
 }
 
 void UBlueprintMessage::AddAssetToken(UObject* Value, FText Message, FName Slot)
 {
-	AddToken(UBlueprintMessageTokenFactory::CreateAssetToken(Value, Message), Slot);
+	AddToken(UBlueprintMessageTokenFactory::MakeAssetToken(Value, Message), Slot);
 }
 
 void UBlueprintMessage::AddAssetSoftPtrToken(TSoftObjectPtr<UObject> Value, FText Message, FName Slot)
 {
-	AddToken(UBlueprintMessageTokenFactory::CreateAssetSoftPtrToken(Value, Message), Slot);
+	AddToken(UBlueprintMessageTokenFactory::MakeAssetSoftPtrToken(Value, Message), Slot);
 }
 
 void UBlueprintMessage::AddAssetPathToken(FSoftObjectPath Value, FText Message, FName Slot)
 {
-	AddToken(UBlueprintMessageTokenFactory::CreateAssetPathToken(Value, Message), Slot);
+	AddToken(UBlueprintMessageTokenFactory::MakeAssetPathToken(Value, Message), Slot);
 }
 
 void UBlueprintMessage::AddImageToken(FName Value, FName Slot)
 {
-	AddToken(UBlueprintMessageTokenFactory::CreateImageToken(Value), Slot);
+	AddToken(UBlueprintMessageTokenFactory::MakeImageToken(Value), Slot);
 }
 
 void UBlueprintMessage::AddActorToken(AActor* Value, FText Message, FName Slot)
 {
-	AddToken(UBlueprintMessageTokenFactory::CreateActorToken(Value, Message), Slot);
+	AddToken(UBlueprintMessageTokenFactory::MakeActorToken(Value, Message), Slot);
 }
 
 void UBlueprintMessage::AddTutorialToken(FString TutorialAssetName, FName Slot)
 {
-	AddToken(UBlueprintMessageTokenFactory::CreateTutorialToken(TutorialAssetName), Slot);
+	AddToken(UBlueprintMessageTokenFactory::MakeTutorialToken(TutorialAssetName), Slot);
 }
 
 void UBlueprintMessage::AddDocumentationToken(FString DocumentationLink, FName Slot)
 {
-	AddToken(UBlueprintMessageTokenFactory::CreateDocumentationToken(DocumentationLink), Slot);
+	AddToken(UBlueprintMessageTokenFactory::MakeDocumentationToken(DocumentationLink), Slot);
 }
 
 void UBlueprintMessage::AddDynamicTextToken_Delegate(FGetMessageDynamicText Value, FName Slot)
 {
-	AddToken(UBlueprintMessageTokenFactory::CreateDynamicTextToken_Delegate(Value), Slot);
+	AddToken(UBlueprintMessageTokenFactory::MakeDynamicTextToken_Delegate(Value), Slot);
 }
 
 void UBlueprintMessage::AddDynamicTextToken_Function(UObject* Object, FName FunctionName, FName Slot)
 {
-	AddToken(UBlueprintMessageTokenFactory::CreateDynamicTextToken_Function(Object, FunctionName), Slot);
+	AddToken(UBlueprintMessageTokenFactory::MakeDynamicTextToken_Function(Object, FunctionName), Slot);
 }
