@@ -27,9 +27,9 @@
 
 const FBlueprintMessageToken FBlueprintMessageToken::EMPTY_TOKEN;
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeSlotToken(FName Value)
+FBlueprintMessageTokenFactoryEntry::FBlueprintMessageTokenFactoryEntry(UFunction* Function)
+	: FactoryClass(Function->GetOuterUClass()), FunctionName(Function->GetFName())
 {
-	return FBlueprintMessageToken(Value);
 }
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeTextToken(FText Value)
@@ -50,11 +50,6 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeNameToken(FName Value)
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeUrlToken(FString Value, FText Message)
 {
 	return FBlueprintMessageToken(FURLToken::Create(Value, Message));
-}
-
-FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeSeverityToken(EBlueprintMessageSeverity Value)
-{
-	return FBlueprintMessageToken(FSeverityToken::Create(static_cast<EMessageSeverity::Type>(Value)));
 }
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeObjectToken(UObject* Value, FText Label)
@@ -178,4 +173,55 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeEditorUtilityWidgetTok
 #else
 	return FBlueprintMessageToken::EMPTY_TOKEN;
 #endif
+}
+
+UBlueprintMessageTokenFactory::UBlueprintMessageTokenFactory()
+{
+	RegisterCustomTokenFactoryClass(GetClass());
+}
+
+bool UBlueprintMessageTokenFactory::IsTokenFactoryFunction(UFunction& Function)
+{
+	if (!Function.HasAllFunctionFlags(FUNC_Static | FUNC_Native | FUNC_BlueprintPure))
+		return false;
+
+	FStructProperty* RetVal = CastField<FStructProperty>(Function.GetReturnProperty());
+	return RetVal && RetVal->Struct == FBlueprintMessageToken::StaticStruct();
+}
+
+void UBlueprintMessageTokenFactory::RegisterCustomTokenFactory(UClass* InClass, FName FunctionName)
+{
+#if WITH_EDITOR
+	checkf(InClass && !FunctionName.IsNone(), TEXT("Invalid spawner data"));
+
+	UFunction* Function = InClass->FindFunctionByName(FunctionName);
+	check(Function);
+
+	checkf(IsTokenFactoryFunction(*Function), TEXT("%s Must return FBlueprintMessageToken"), *Function->GetName());
+
+	GetMutableDefault<UBlueprintMessageTokenFactory>()->TokenFactories.AddUnique(FBlueprintMessageTokenFactoryEntry(Function));
+#endif
+}
+
+void UBlueprintMessageTokenFactory::RegisterCustomTokenFactoryClass(UClass* FactoryClass)
+{
+	auto& Factories = GetMutableDefault<UBlueprintMessageTokenFactory>()->TokenFactories;
+
+	TArray<FName> FactoryFunctions;
+	FactoryClass->GenerateFunctionList(FactoryFunctions);
+
+	for (FName Name : FactoryFunctions)
+	{
+		UFunction* Function = FactoryClass->FindFunctionByName(Name);
+		if (Function && IsTokenFactoryFunction(*Function)
+			&& Function->HasMetaData(TEXT("TokenFactoryFunction")))
+		{
+			Factories.Add(FBlueprintMessageTokenFactoryEntry(Function));
+		}
+	}
+}
+
+void UBlueprintMessageTokenFactory::GatherTokenSpawners(TArray<FBlueprintMessageTokenFactoryEntry>& Functions)
+{
+	Functions = GetDefault<UBlueprintMessageTokenFactory>()->TokenFactories;
 }

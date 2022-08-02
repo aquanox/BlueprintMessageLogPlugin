@@ -14,7 +14,6 @@ Note: plugin is at experimental stage, things may change a lot.
  * Blueprint wrappers for tokens:
    * FTextToken - plain text
    * FURLToken - hyperlink
-   * FSeverityToken - message severity switch
    * FUObjectToken - reference to UObject
    * FActorToken - reference to Actor
    * FAssetNameToken - reference to Asset
@@ -23,9 +22,10 @@ Note: plugin is at experimental stage, things may change a lot.
    * FDocumentationToken - reference to documentation 
    * FDynamicTextToken (Soon...)
    * FActionToken (Soon...)
-   * FEditorUtilityToken - reference to Blutility Widget/Action/Task
+   * FEditorUtilityToken - activates Blutility Widget
  * Message Slots - reserve a spot and fill it with token afterwards!
  * Custom blueprint graph nodes for Create Message and Add Token (Soon...)
+ * Custom tokens support
 
 ## Unreal Engine Versions
 

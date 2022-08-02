@@ -29,6 +29,7 @@ public class BlueprintMessageEditor : ModuleRules
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
 			"UnrealEd",
+			"Kismet",
 			"KismetCompiler",
 			"BlueprintMessage",
 			"BlueprintGraph",

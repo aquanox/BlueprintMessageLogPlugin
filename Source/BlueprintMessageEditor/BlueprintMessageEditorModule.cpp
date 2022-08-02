@@ -2,4 +2,9 @@
 
 #include "Modules/ModuleManager.h"
 
-IMPLEMENT_MODULE(FDefaultModuleImpl, BlueprintMessageEditor);
+struct BLUEPRINTMESSAGEEDITOR_API FBlueprintMessageEditorModule : public FDefaultModuleImpl
+{
+
+};
+
+IMPLEMENT_MODULE(FBlueprintMessageEditorModule, BlueprintMessageEditor);

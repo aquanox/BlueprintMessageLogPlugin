@@ -53,7 +53,11 @@ public:
 
 	/* Add token to this message */
 	UFUNCTION(BlueprintCallable, meta=(AutoCreateRefTerm="Token"))
-	void AddToken(const FBlueprintMessageToken& Token, FName Slot = TEXT(""));
+	void AddToken(const FBlueprintMessageToken& Token, FName Slot = NAME_None);
+
+	/* Internal signature holder */
+	UFUNCTION(BlueprintCallable, meta=(DevelopmentOnly, BlueprintInternalUseOnly=true))
+	void AddTokenStub(FName Slot = NAME_None) {}
 
 	/* Add multiple tokens to this message */
 	UFUNCTION(BlueprintCallable, meta=(AutoCreateRefTerm="Tokens"))
@@ -72,72 +76,15 @@ public:
 	void ShowAndPrint(bool bPrintToScreen = true, bool bPrintToLog = true, FLinearColor TextColor = FLinearColor(0.0, 0.66, 1.0), float Duration = 2.f, const FName Key = NAME_None);
 
 	/* Add a token slot with name */
-	UFUNCTION(BlueprintCallable)
-	void AddSlot(FName Name);
+	UFUNCTION(BlueprintCallable, meta=(DevelopmentOnly))
+	UBlueprintMessage* AddNamedSlot(FName Name);
 
 	/* Remove token slot with specified name */
 	UFUNCTION(BlueprintCallable)
-	void RemoveSlot(FName Name);
+	UBlueprintMessage* RemoveNamedSlot(FName Name);
 
-	/* Add token with text */
 	UFUNCTION(BlueprintCallable)
-	void AddTextToken(FText Value, FName Slot = TEXT(""));
-
-	/* Add token with string */
-	UFUNCTION(BlueprintCallable)
-	void AddStringToken(FString Value, FName Slot = TEXT(""));
-
-	/* Add token with name */
-	UFUNCTION(BlueprintCallable)
-	void AddNameToken(FName Value, FName Slot = TEXT(""));
-
-	/* Add token with clickable URL */
-	UFUNCTION(BlueprintCallable)
-	void AddURLToken(FString Value, FText Label = INVTEXT(""), FName Slot = TEXT(""));
-
-	/* Add token that overrides severity of message */
-	UFUNCTION(BlueprintCallable)
-	void AddSeverityToken(EBlueprintMessageSeverity Value, FName Slot = TEXT(""));
-
-	/* Add token that links a specific object */
-	UFUNCTION(BlueprintCallable)
-	void AddObjectToken(UObject* Value, FText Label = INVTEXT(""), FName Slot = TEXT(""));
-
-	/* Add asset reference from object */
-	UFUNCTION(BlueprintCallable)
-	void AddAssetToken(UObject* Value, FText Message = INVTEXT(""), FName Slot = TEXT(""));
-
-	/* Add asset reference from soft path */
-	UFUNCTION(BlueprintCallable)
-	void AddAssetSoftPtrToken(TSoftObjectPtr<UObject> Value, FText Message = INVTEXT(""), FName Slot = TEXT(""));
-
-	/* Add asset reference from soft path */
-	UFUNCTION(BlueprintCallable)
-	void AddAssetPathToken(FSoftObjectPath Value, FText Message = INVTEXT(""), FName Slot = TEXT(""));
-
-	/* Add image from AppStyle by name */
-	UFUNCTION(BlueprintCallable)
-	void AddImageToken(FName Value, FName Slot = TEXT(""));
-
-	/* Add actor reference */
-	UFUNCTION(BlueprintCallable)
-	void AddActorToken(AActor* Value, FText Message = INVTEXT(""), FName Slot = TEXT(""));
-
-	/* add token that activates specific tutorial */
-	UFUNCTION(BlueprintCallable)
-	void AddTutorialToken(FString TutorialAssetName, FName Slot = TEXT(""));
-
-	/* add token with documentation link */
-	UFUNCTION(BlueprintCallable)
-	void AddDocumentationToken(FString DocumentationLink, FName Slot = TEXT(""));
-
-	/* Add token with dynamically generated text */
-	// UFUNCTION(BlueprintCallable)
-	void AddDynamicTextToken_Delegate(FGetMessageDynamicText Value, FName Slot = TEXT(""));
-	/* Add token with dynamically generated text */
-	// UFUNCTION(BlueprintCallable)
-	void AddDynamicTextToken_Function(UObject* Object, FName FunctionName, FName Slot = TEXT(""));
-
+	UBlueprintMessage* SetSeverity(EBlueprintMessageSeverity Severity);
 
 protected:
 

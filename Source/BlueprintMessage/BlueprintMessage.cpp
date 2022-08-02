@@ -61,12 +61,13 @@ void UBlueprintMessage::AddTokens(const TArray<FBlueprintMessageToken>& InTokens
 	}
 }
 
-void UBlueprintMessage::AddSlot(FName Slot)
+UBlueprintMessage* UBlueprintMessage::AddNamedSlot(FName Slot)
 {
-	AddToken(UBlueprintMessageTokenFactory::MakeSlotToken(Slot));
+	AddToken(FBlueprintMessageToken(Slot));
+	return this;
 }
 
-void UBlueprintMessage::RemoveSlot(FName Name)
+UBlueprintMessage* UBlueprintMessage::RemoveNamedSlot(FName Name)
 {
 	for(auto It = Tokens.CreateIterator(); It; ++It)
 	{
@@ -75,6 +76,13 @@ void UBlueprintMessage::RemoveSlot(FName Name)
 			It.RemoveCurrent();
 		}
 	}
+	return this;
+}
+
+UBlueprintMessage* UBlueprintMessage::SetSeverity(EBlueprintMessageSeverity NewSeverity)
+{
+	Severity = NewSeverity;
+	return this;
 }
 
 void UBlueprintMessage::ClearTokens()
@@ -125,79 +133,4 @@ TSharedRef<FTokenizedMessage> UBlueprintMessage::BuildMessage() const
 	}
 
 	return MessagePtr;
-}
-
-void UBlueprintMessage::AddTextToken(FText Value, FName Slot)
-{
-	AddToken(UBlueprintMessageTokenFactory::MakeTextToken(Value), Slot);
-}
-
-void UBlueprintMessage::AddStringToken(FString Value, FName Slot)
-{
-	AddToken(UBlueprintMessageTokenFactory::MakeStringToken(Value), Slot);
-}
-
-void UBlueprintMessage::AddNameToken(FName Value, FName Slot)
-{
-	AddToken(UBlueprintMessageTokenFactory::MakeNameToken(Value), Slot);
-}
-
-void UBlueprintMessage::AddURLToken(FString Value, FText Label, FName Slot)
-{
-	AddToken(UBlueprintMessageTokenFactory::MakeUrlToken(Value, Label), Slot);
-}
-
-void UBlueprintMessage::AddSeverityToken(EBlueprintMessageSeverity Value, FName Slot)
-{
-	AddToken(UBlueprintMessageTokenFactory::MakeSeverityToken(Value), Slot);
-}
-
-void UBlueprintMessage::AddObjectToken(UObject* Value, FText Label, FName Slot)
-{
-	AddToken(UBlueprintMessageTokenFactory::MakeObjectToken(Value, Label), Slot);
-}
-
-void UBlueprintMessage::AddAssetToken(UObject* Value, FText Message, FName Slot)
-{
-	AddToken(UBlueprintMessageTokenFactory::MakeAssetToken(Value, Message), Slot);
-}
-
-void UBlueprintMessage::AddAssetSoftPtrToken(TSoftObjectPtr<UObject> Value, FText Message, FName Slot)
-{
-	AddToken(UBlueprintMessageTokenFactory::MakeAssetSoftPtrToken(Value, Message), Slot);
-}
-
-void UBlueprintMessage::AddAssetPathToken(FSoftObjectPath Value, FText Message, FName Slot)
-{
-	AddToken(UBlueprintMessageTokenFactory::MakeAssetPathToken(Value, Message), Slot);
-}
-
-void UBlueprintMessage::AddImageToken(FName Value, FName Slot)
-{
-	AddToken(UBlueprintMessageTokenFactory::MakeImageToken(Value), Slot);
-}
-
-void UBlueprintMessage::AddActorToken(AActor* Value, FText Message, FName Slot)
-{
-	AddToken(UBlueprintMessageTokenFactory::MakeActorToken(Value, Message), Slot);
-}
-
-void UBlueprintMessage::AddTutorialToken(FString TutorialAssetName, FName Slot)
-{
-	AddToken(UBlueprintMessageTokenFactory::MakeTutorialToken(TutorialAssetName), Slot);
-}
-
-void UBlueprintMessage::AddDocumentationToken(FString DocumentationLink, FName Slot)
-{
-	AddToken(UBlueprintMessageTokenFactory::MakeDocumentationToken(DocumentationLink), Slot);
-}
-
-void UBlueprintMessage::AddDynamicTextToken_Delegate(FGetMessageDynamicText Value, FName Slot)
-{
-	AddToken(UBlueprintMessageTokenFactory::MakeDynamicTextToken_Delegate(Value), Slot);
-}
-
-void UBlueprintMessage::AddDynamicTextToken_Function(UObject* Object, FName FunctionName, FName Slot)
-{
-	AddToken(UBlueprintMessageTokenFactory::MakeDynamicTextToken_Function(Object, FunctionName), Slot);
 }

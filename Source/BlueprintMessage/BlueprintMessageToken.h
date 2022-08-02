@@ -59,6 +59,29 @@ static_assert((int32)EBlueprintMessageSeverity::PerformanceWarning == EMessageSe
 static_assert((int32)EBlueprintMessageSeverity::Warning == EMessageSeverity::Warning);
 static_assert((int32)EBlueprintMessageSeverity::Info == EMessageSeverity::Info);
 
+USTRUCT()
+struct FBlueprintMessageTokenFactoryEntry
+{
+	GENERATED_BODY()
+public:
+	TWeakObjectPtr<UClass>	FactoryClass;
+	FName					FunctionName;
+
+	FBlueprintMessageTokenFactoryEntry() = default;
+	FBlueprintMessageTokenFactoryEntry(UFunction* Function);
+
+	friend bool operator==(const FBlueprintMessageTokenFactoryEntry& Lhs, const FBlueprintMessageTokenFactoryEntry& RHS)
+	{
+		return Lhs.FactoryClass == RHS.FactoryClass
+			&& Lhs.FunctionName == RHS.FunctionName;
+	}
+
+	friend bool operator!=(const FBlueprintMessageTokenFactoryEntry& Lhs, const FBlueprintMessageTokenFactoryEntry& RHS)
+	{
+		return !(Lhs == RHS);
+	}
+};
+
 /**
  * Token factory
  */
@@ -67,66 +90,73 @@ class BLUEPRINTMESSAGE_API UBlueprintMessageTokenFactory : public UBlueprintFunc
 {
 	GENERATED_BODY()
 public:
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
-	static FBlueprintMessageToken MakeSlotToken(FName Value);
-
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
+	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeTextToken(FText Value);
 
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
+	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeStringToken(FString Value);
 
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
+	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeNameToken(FName Value);
 
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
+	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeUrlToken(FString Value, FText Label = INVTEXT(""));
 
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
-	static FBlueprintMessageToken MakeSeverityToken(EBlueprintMessageSeverity Value);
-
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
+	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeObjectToken(UObject* Value, FText Label = INVTEXT(""));
 
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
+	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeAssetToken(UObject* Value, FText Message = INVTEXT(""));
 
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
+	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeAssetSoftPtrToken(TSoftObjectPtr<UObject> Value, FText Message = INVTEXT(""));
 
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
+	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeClassSoftPtrToken(TSoftClassPtr<UObject> Value, FText Message = INVTEXT(""));
 
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
+	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeClassPathToken(FSoftClassPath Value, FText Message = INVTEXT(""));
 
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
+	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeAssetPathToken(FSoftObjectPath Value, FText Message = INVTEXT(""));
 
 	static FBlueprintMessageToken MakeAssetPathToken_Internal(FString AssetPath, FText Message);
 
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
+	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeImageToken(FName Value);
 
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
+	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeActorToken(AActor* Value, FText Message = INVTEXT(""));
 
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
+	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeTutorialToken(FString Value);
 
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
+	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeDocumentationToken(FString Value);
 
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
+	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeDynamicTextToken_Delegate(FGetMessageDynamicText Value);
 
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
+	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeDynamicTextToken_Function(UObject* Object, FName FunctionName);
 
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
+	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeActionToken(FText Name, FText Description, const FBlueprintMessageActionDelegate& Action, bool bInSingleUse = false);
 
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe))
+	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeEditorUtilityWidgetToken(UPARAM(meta=(AllowedClasses="EditorUtilityWidgetBlueprint")) TSoftObjectPtr<UBlueprint> Widget, FText ActionName, FText Description);
 
+	UBlueprintMessageTokenFactory();
+
+	static bool IsTokenFactoryFunction(UFunction& Function);
+	/** */
+	static void RegisterCustomTokenFactory(UClass* InClass, FName FunctionName);
+	/** */
+	static void RegisterCustomTokenFactoryClass(UClass* InClass);
+	/** */
+	static void GatherTokenSpawners(TArray<FBlueprintMessageTokenFactoryEntry>& Functions);
+
+protected:
+
+	TArray<FBlueprintMessageTokenFactoryEntry> TokenFactories;
 };
