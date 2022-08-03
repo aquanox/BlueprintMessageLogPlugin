@@ -34,21 +34,31 @@ Tested with 5.0, ue5-main and can be modified to work with other engine versions
 ## Examples
 
 Minimal "Hello World"
+
 ![](Images/BMP-HelloWorld.png)
 
+Can build message out of tokens directly
+
+![](Images/BMP-CreateMessage.png)
+
 A simple message with reference to actor in world
+
 ![](Images/BMP-ActorToken.png)
 
 A simple message with executable action (in PIE only)
+
 ![](Images/BMP-ActionToken.png)
 
 A simple message to prompt activation of Editor Utility Widget
+
 ![](Images/BMP-EditorUtilityToken.png)
 
 A simple usage example of message slots
+
 ![](Images/BMP-Slots.png)
 
-Result:
+Message Log View:
+
 ![](Images/BMP-MessageLog.png)
 
 ## Contributing
