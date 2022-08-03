@@ -46,6 +46,11 @@ FText UK2Node_CreateBlueprintMessage::GetNodeTitle(ENodeTitleType::Type TitleTyp
 	return Super::GetNodeTitle(TitleType);
 }
 
+FText UK2Node_CreateBlueprintMessage::GetFunctionContextString() const
+{
+	return Super::GetFunctionContextString();
+}
+
 FName UK2Node_CreateBlueprintMessage::GetPinName(int32 PinIndex) const
 {
 	return *FString::Printf(TEXT("[%d]"), PinIndex);
@@ -273,7 +278,7 @@ void UK2Node_CreateBlueprintMessage::ExpandNode(FKismetCompilerContext& Compiler
 	for (int32 Index = 0; Index < DynamicPins.Num(); ++Index)
 	{
 		// Find the input pin on the "Make Array" node by index and link it to the literal string
-		UEdGraphPin* ArrayIn = MakeArrayNode->FindPinChecked(FString::Printf(TEXT("[%d]"), Index));
+		UEdGraphPin* ArrayIn = MakeArrayNode->FindPinChecked(GetPinName(Index));
 
 		bIsErrorFree &= CompilerContext.MovePinLinksToIntermediate(*DynamicPins[Index], *ArrayIn).CanSafeConnect();
 	}

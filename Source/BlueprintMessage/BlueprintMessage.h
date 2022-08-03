@@ -20,14 +20,14 @@ public:
 
 	/**
 	 * Construct new message instance
-	 * Internal use only
+	 * USed by K2Node_CreateBlueprintMessage.
 	 *
 	 * @param LogCategory message log category for this message
 	 * @param Severity severity of this message
 	 * @returns message instance
 	 */
-	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage", meta=(LogCategory = "BlueprintLog", Severity="EBlueprintMessageSeverity::Info", BlueprintInternalUseOnly=true))
-	static UBlueprintMessage* CreateBlueprintMessage(UPARAM(DisplayName="Category") FName LogCategory, EBlueprintMessageSeverity Severity);
+	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage", meta=(BlueprintInternalUseOnly=true))
+	static UBlueprintMessage* CreateBlueprintMessage(UPARAM(DisplayName="Category") FName LogCategory = TEXT("BlueprintLog"), EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info);
 
 	/**
 	 * Construct new message instance with initial text
@@ -38,7 +38,7 @@ public:
 	 * @param bShow trigger show right after creation
 	 * @returns message instance
 	 */
-	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage", meta=(DevelopmentOnly, AdvancedDisplay=3))
+	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage", meta=(AdvancedDisplay=3))
 	static UBlueprintMessage* CreateSimpleBlueprintMessage(UPARAM(DisplayName="Category") FName LogCategory = TEXT("BlueprintLog"), EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info, FText Message = INVTEXT(""), bool bShow = false);
 
 
@@ -55,10 +55,6 @@ public:
 	UFUNCTION(BlueprintCallable, meta=(AutoCreateRefTerm="Token"))
 	void AddToken(const FBlueprintMessageToken& Token, FName Slot = NAME_None);
 
-	/* Internal signature holder */
-	UFUNCTION(BlueprintCallable, meta=(DevelopmentOnly, BlueprintInternalUseOnly=true))
-	void AddTokenStub(FName Slot = NAME_None) {}
-
 	/* Add multiple tokens to this message */
 	UFUNCTION(BlueprintCallable, meta=(AutoCreateRefTerm="Tokens"))
 	void AddTokens(const TArray<FBlueprintMessageToken>& Tokens);
@@ -68,21 +64,22 @@ public:
 	void ClearTokens();
 
 	/* Show message in Message Log */
-	UFUNCTION(BlueprintCallable, meta=(DevelopmentOnly))
+	UFUNCTION(BlueprintCallable)
 	void Show();
 
 	/* Show message in message Log and print it on screen */
-	UFUNCTION(BlueprintCallable, meta=(DevelopmentOnly))
+	UFUNCTION(BlueprintCallable)
 	void ShowAndPrint(bool bPrintToScreen = true, bool bPrintToLog = true, FLinearColor TextColor = FLinearColor(0.0, 0.66, 1.0), float Duration = 2.f, const FName Key = NAME_None);
 
 	/* Add a token slot with name */
-	UFUNCTION(BlueprintCallable, meta=(DevelopmentOnly))
+	UFUNCTION(BlueprintCallable)
 	UBlueprintMessage* AddNamedSlot(FName Name);
 
 	/* Remove token slot with specified name */
 	UFUNCTION(BlueprintCallable)
-	UBlueprintMessage* RemoveNamedSlot(FName Name);
+	void RemoveNamedSlot(FName Name);
 
+	/** Change severity for this message */
 	UFUNCTION(BlueprintCallable)
 	UBlueprintMessage* SetSeverity(EBlueprintMessageSeverity Severity);
 

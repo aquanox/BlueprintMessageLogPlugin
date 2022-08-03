@@ -5,15 +5,14 @@
 
 #include "BlueprintActionDatabaseRegistrar.h"
 #include "BlueprintMessage.h"
+#include "BlueprintMessageModule.h"
 #include "BlueprintMessageToken.h"
 #include "BlueprintNodeSpawner.h"
 #include "BlueprintNodeStatics.h"
 #include "FindInBlueprintManager.h"
 #include "K2Node_Knot.h"
 #include "KismetCompiler.h"
-#include "Classes/EditorStyleSettings.h"
 
-static const FName MD_TokenFactoryName(TEXT("TokenFactoryName"));
 static const FName PN_Chain(TEXT("Message"));
 static const FName PN_Slot(TEXT("Slot"));
 
@@ -22,10 +21,9 @@ static const FName PN_Slot(TEXT("Slot"));
 UK2Node_AddBlueprintMessageToken::UK2Node_AddBlueprintMessageToken()
 {
 	FunctionReference.SetExternalMember(
-		GET_FUNCTION_NAME_CHECKED(UBlueprintMessage, AddTokenStub),
+		GET_FUNCTION_NAME_CHECKED(UBlueprintMessage, AddToken),
 		UBlueprintMessage::StaticClass()
 	);
-	SetEnabledState(ENodeEnabledState::DevelopmentOnly, false);
 }
 
 void UK2Node_AddBlueprintMessageToken::AllocateDefaultPins()
@@ -100,9 +98,9 @@ FText UK2Node_AddBlueprintMessageToken::GetTokenTitle() const
 {
 	if (UFunction* Function = GetFactoryFunction())
 	{
-		if (Function->HasMetaData(MD_TokenFactoryName))
+		if (Function->HasMetaData(FMessageTokenFactoryRegistration::MD_TokenFactoryName))
 		{
-			return FText::FromString(Function->GetMetaData(MD_TokenFactoryName));
+			return FText::FromString(Function->GetMetaData(FMessageTokenFactoryRegistration::MD_TokenFactoryName));
 		}
 		else
 		{
@@ -159,17 +157,17 @@ void UK2Node_AddBlueprintMessageToken::GetMenuActions(FBlueprintActionDatabaseRe
 	const UClass* ActionKey = GetClass();
 	if (InActionRegistrar.IsOpenForRegistration(ActionKey))
 	{
-		TArray<FBlueprintMessageTokenFactoryEntry> SpawnerFunctions;
-		UBlueprintMessageTokenFactory::GatherTokenSpawners(SpawnerFunctions);
+		TArray<FMessageTokenFactoryRegistration> Registrations;
+		FMessageTokenFactoryRegistration::GetRegisteredFactories(Registrations);
 
-		for (FBlueprintMessageTokenFactoryEntry const& Spawner : SpawnerFunctions)
+		for (FMessageTokenFactoryRegistration const& FactoryRegistration : Registrations)
 		{
 			UBlueprintNodeSpawner* NodeSpawner = UBlueprintNodeSpawner::Create(GetClass());
 			check(NodeSpawner != nullptr);
-			NodeSpawner->CustomizeNodeDelegate = UBlueprintNodeSpawner::FCustomizeNodeDelegate::CreateLambda([Spawner](UEdGraphNode* Node, bool bIsTemplate)
+			NodeSpawner->CustomizeNodeDelegate = UBlueprintNodeSpawner::FCustomizeNodeDelegate::CreateLambda([FactoryRegistration](UEdGraphNode* Node, bool bIsTemplate)
 			{
 				UK2Node_AddBlueprintMessageToken* NodeImpl = CastChecked<UK2Node_AddBlueprintMessageToken>(Node);
-				NodeImpl->FactoryReference.SetExternalMember(Spawner.FunctionName, Spawner.FactoryClass.Get());
+				NodeImpl->FactoryReference.SetExternalMember(FactoryRegistration.FunctionName, FactoryRegistration.FactoryClass.Get());
 			});
 			InActionRegistrar.AddBlueprintAction(ActionKey, NodeSpawner);
 		}

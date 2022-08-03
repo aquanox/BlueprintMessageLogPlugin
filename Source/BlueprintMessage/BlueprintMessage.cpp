@@ -67,7 +67,7 @@ UBlueprintMessage* UBlueprintMessage::AddNamedSlot(FName Slot)
 	return this;
 }
 
-UBlueprintMessage* UBlueprintMessage::RemoveNamedSlot(FName Name)
+void UBlueprintMessage::RemoveNamedSlot(FName Name)
 {
 	for(auto It = Tokens.CreateIterator(); It; ++It)
 	{
@@ -76,7 +76,6 @@ UBlueprintMessage* UBlueprintMessage::RemoveNamedSlot(FName Name)
 			It.RemoveCurrent();
 		}
 	}
-	return this;
 }
 
 UBlueprintMessage* UBlueprintMessage::SetSeverity(EBlueprintMessageSeverity NewSeverity)
