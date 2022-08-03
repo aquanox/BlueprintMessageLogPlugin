@@ -28,16 +28,13 @@ UK2Node_AddBlueprintMessageToken::UK2Node_AddBlueprintMessageToken()
 
 void UK2Node_AddBlueprintMessageToken::AllocateDefaultPins()
 {
-	UFunction* const TargetFunction = GetTargetFunction();
+	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Exec, UEdGraphSchema_K2::PN_Execute);
+	CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Exec, UEdGraphSchema_K2::PN_Then);
 
-	CreateExecPinsForFunctionCall(TargetFunction);
-
-	UEdGraphPin* ChainIn = CreateSelfPin(TargetFunction);
-	check(ChainIn);
+	UEdGraphPin* ChainIn = CreateSelfPin(GetTargetFunction());
 	ChainIn->PinFriendlyName = LOCTEXT( "Target", "Target");
 
 	UEdGraphPin* ChainOut = CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Object, NAME_None, UBlueprintMessage::StaticClass(),	PN_Chain);
-	check(ChainOut);
 
 	// Create other param pins
 	UEdGraphPin* SlotPin = CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Name, PN_Slot);
@@ -91,7 +88,7 @@ UFunction* UK2Node_AddBlueprintMessageToken::GetFactoryFunction() const
 
 FText UK2Node_AddBlueprintMessageToken::GetMenuCategory() const
 {
-	return GetDefaultCategoryForFunction(GetFactoryFunction(), FText::GetEmpty());
+	return GetDefaultCategoryForFunction(GetTargetFunction(), FText::GetEmpty());
 }
 
 FText UK2Node_AddBlueprintMessageToken::GetTokenTitle() const
@@ -154,6 +151,8 @@ FText UK2Node_AddBlueprintMessageToken::GetNodeTitle(ENodeTitleType::Type TitleT
 
 void UK2Node_AddBlueprintMessageToken::GetMenuActions(FBlueprintActionDatabaseRegistrar& InActionRegistrar) const
 {
+
+
 	const UClass* ActionKey = GetClass();
 	if (InActionRegistrar.IsOpenForRegistration(ActionKey))
 	{

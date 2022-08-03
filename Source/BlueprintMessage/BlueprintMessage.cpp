@@ -2,6 +2,7 @@
 
 #include "BlueprintMessage.h"
 
+#include "BlueprintMessageTokenFactory.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 UBlueprintMessage* UBlueprintMessage::CreateBlueprintMessage(FName Category, EBlueprintMessageSeverity Severity)
@@ -33,13 +34,13 @@ UBlueprintMessage* UBlueprintMessage::Duplicate()
 	return Object;
 }
 
-void UBlueprintMessage::AddToken(const FBlueprintMessageToken& Token, FName Slot)
+UBlueprintMessage* UBlueprintMessage::AddToken(const FBlueprintMessageToken& Token, FName Slot)
 {
 	// Simply add a new token
 	if (Slot.IsNone())
 	{
 		Tokens.Add(Token);
-		return;
+		return this;
 	}
 
 	// Find slot and replace it with new token
@@ -51,14 +52,17 @@ void UBlueprintMessage::AddToken(const FBlueprintMessageToken& Token, FName Slot
 	{ // Add new token with slot identifier
 		Tokens.Add_GetRef(Token).Name = Slot;
 	}
+
+	return this;
 }
 
-void UBlueprintMessage::AddTokens(const TArray<FBlueprintMessageToken>& InTokens)
+UBlueprintMessage* UBlueprintMessage::AddTokens(const TArray<FBlueprintMessageToken>& InTokens)
 {
 	for (const FBlueprintMessageToken& Token : InTokens)
 	{
 		AddToken(Token);
 	}
+	return this;
 }
 
 UBlueprintMessage* UBlueprintMessage::AddNamedSlot(FName Slot)
@@ -67,7 +71,7 @@ UBlueprintMessage* UBlueprintMessage::AddNamedSlot(FName Slot)
 	return this;
 }
 
-void UBlueprintMessage::RemoveNamedSlot(FName Name)
+UBlueprintMessage* UBlueprintMessage::RemoveNamedSlot(FName Name)
 {
 	for(auto It = Tokens.CreateIterator(); It; ++It)
 	{
@@ -76,6 +80,7 @@ void UBlueprintMessage::RemoveNamedSlot(FName Name)
 			It.RemoveCurrent();
 		}
 	}
+	return this;
 }
 
 UBlueprintMessage* UBlueprintMessage::SetSeverity(EBlueprintMessageSeverity NewSeverity)
@@ -84,9 +89,10 @@ UBlueprintMessage* UBlueprintMessage::SetSeverity(EBlueprintMessageSeverity NewS
 	return this;
 }
 
-void UBlueprintMessage::ClearTokens()
+UBlueprintMessage* UBlueprintMessage::ClearTokens()
 {
 	Tokens.Empty();
+	return this;
 }
 
 void UBlueprintMessage::Show()

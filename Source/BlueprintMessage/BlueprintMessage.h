@@ -48,39 +48,39 @@ public:
 	/**
 	 * Duplicate message and return its copy
 	 */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage")
 	UBlueprintMessage* Duplicate();
 
 	/* Add token to this message */
-	UFUNCTION(BlueprintCallable, meta=(AutoCreateRefTerm="Token"))
-	void AddToken(const FBlueprintMessageToken& Token, FName Slot = NAME_None);
+	UFUNCTION(BlueprintCallable, meta=(AutoCreateRefTerm="Token"), Category="Utilities|BlueprintMessage")
+	UBlueprintMessage* AddToken(const FBlueprintMessageToken& Token, FName Slot = NAME_None);
 
 	/* Add multiple tokens to this message */
-	UFUNCTION(BlueprintCallable, meta=(AutoCreateRefTerm="Tokens"))
-	void AddTokens(const TArray<FBlueprintMessageToken>& Tokens);
+	UFUNCTION(BlueprintCallable, meta=(AutoCreateRefTerm="Tokens"), Category="Utilities|BlueprintMessage")
+	UBlueprintMessage* AddTokens(const TArray<FBlueprintMessageToken>& Tokens);
 
 	/* Clear all tokens in this message */
-	UFUNCTION(BlueprintCallable)
-	void ClearTokens();
+	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage")
+	UBlueprintMessage* ClearTokens();
 
 	/* Show message in Message Log */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage")
 	void Show();
 
 	/* Show message in message Log and print it on screen */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage")
 	void ShowAndPrint(bool bPrintToScreen = true, bool bPrintToLog = true, FLinearColor TextColor = FLinearColor(0.0, 0.66, 1.0), float Duration = 2.f, const FName Key = NAME_None);
 
 	/* Add a token slot with name */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage")
 	UBlueprintMessage* AddNamedSlot(FName Name);
 
 	/* Remove token slot with specified name */
-	UFUNCTION(BlueprintCallable)
-	void RemoveNamedSlot(FName Name);
+	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage")
+	UBlueprintMessage* RemoveNamedSlot(FName Name);
 
 	/** Change severity for this message */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage")
 	UBlueprintMessage* SetSeverity(EBlueprintMessageSeverity Severity);
 
 protected:
