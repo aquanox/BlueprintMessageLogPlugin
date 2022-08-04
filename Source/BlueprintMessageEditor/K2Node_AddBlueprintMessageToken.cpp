@@ -48,7 +48,7 @@ void UK2Node_AddBlueprintMessageToken::AllocateDefaultPins()
 	auto CreatePinCopy = [&](UEdGraphPin* ProtoPin)
 	{
 		const FEdGraphPinType& ProtoPinType = ProtoPin->PinType;
-		UEdGraphNode::FCreatePinParams PinParams;
+		FCreatePinParams PinParams;
 		PinParams.ContainerType = ProtoPinType.ContainerType;
 		PinParams.ValueTerminalType = ProtoPinType.PinValueType;
 		UEdGraphPin* Pin = CreatePin(ProtoPin->Direction, ProtoPinType.PinCategory, ProtoPinType.PinSubCategory, ProtoPinType.PinSubCategoryObject.Get(), ProtoPin->PinName, PinParams);
@@ -73,11 +73,6 @@ void UK2Node_AddBlueprintMessageToken::AllocateDefaultPins()
 	}
 
 	DummyFactoryNode->DestroyNode();
-}
-
-void UK2Node_AddBlueprintMessageToken::PostReconstructNode()
-{
-	Super::PostReconstructNode();
 }
 
 UFunction* UK2Node_AddBlueprintMessageToken::GetFactoryFunction() const
@@ -151,8 +146,6 @@ FText UK2Node_AddBlueprintMessageToken::GetNodeTitle(ENodeTitleType::Type TitleT
 
 void UK2Node_AddBlueprintMessageToken::GetMenuActions(FBlueprintActionDatabaseRegistrar& InActionRegistrar) const
 {
-
-
 	const UClass* ActionKey = GetClass();
 	if (InActionRegistrar.IsOpenForRegistration(ActionKey))
 	{
@@ -210,24 +203,26 @@ void UK2Node_AddBlueprintMessageToken::ExpandNode(FKismetCompilerContext& Compil
 
 	bool bIsErrorFree = true;
 
-	auto ChainIn = FindPinChecked(UEdGraphSchema_K2::PN_Self, EGPD_Input);
+	auto SelfPin = FindPinChecked(UEdGraphSchema_K2::PN_Self, EGPD_Input);
 
 	// spawn knot
 	auto KnotNode = CompilerContext.SpawnIntermediateNode<UK2Node_Knot>(this, SourceGraph);
 	KnotNode->AllocateDefaultPins();
+	CompilerContext.MessageLog.NotifyIntermediateObjectCreation(KnotNode, this);
 	// move self to knot
-	bIsErrorFree &= MovePinLinksToIntermediate(ChainIn, KnotNode->GetInputPin());
+	bIsErrorFree &= MovePinLinksToIntermediate(SelfPin, KnotNode->GetInputPin());
 
 	// spawn factory node
 	auto FactoryNode = CompilerContext.SpawnIntermediateNode<UK2Node_CallFunction>(this, SourceGraph);
 	FactoryNode->FunctionReference = FactoryReference;
 	FactoryNode->AllocateDefaultPins();
+	CompilerContext.MessageLog.NotifyIntermediateObjectCreation(FactoryNode, this);
 
 	// transfer factory pins into factory node
 	for (UEdGraphPin* FactoryPin : FactoryNode->Pins)
 	{
 		UEdGraphPin* NodePin = FindPin(FactoryPin->PinName, EGPD_Input);
-		if (FactoryPin->PinName != UEdGraphSchema_K2::PN_Self && NodePin)
+		if (NodePin && FactoryPin->PinName != UEdGraphSchema_K2::PN_Self)
 		{
 			bIsErrorFree &=  MovePinLinksToIntermediate(NodePin, FactoryPin);
 		}
@@ -237,28 +232,20 @@ void UK2Node_AddBlueprintMessageToken::ExpandNode(FKismetCompilerContext& Compil
 	auto AddTokenNode = CompilerContext.SpawnIntermediateNode<UK2Node_CallFunction>(this, SourceGraph);
 	AddTokenNode->FunctionReference.SetExternalMember(GET_FUNCTION_NAME_CHECKED(UBlueprintMessage, AddToken), UBlueprintMessage::StaticClass());
 	AddTokenNode->AllocateDefaultPins();
+	CompilerContext.MessageLog.NotifyIntermediateObjectCreation(AddTokenNode, this);
 
 	// set self
 	bIsErrorFree &=  LinkPins(KnotNode->GetOutputPin(), AddTokenNode->FindPinChecked(UEdGraphSchema_K2::PN_Self, EGPD_Input));
 	// set slot
-	bIsErrorFree &=  MovePinLinksToIntermediate(FindPin(PN_Slot, EGPD_Input), AddTokenNode->FindPinChecked(PN_Slot, EGPD_Input));
+	bIsErrorFree &=  MovePinLinksToIntermediate(FindPinChecked(PN_Slot, EGPD_Input), AddTokenNode->FindPinChecked(PN_Slot, EGPD_Input));
 	// link return value of spawn to addtoken
 	bIsErrorFree &=  LinkPins(FactoryNode->GetReturnValuePin(), AddTokenNode->FindPinChecked(TEXT("Token"), EGPD_Input));
 
 	// move execs to intermediate
-	bIsErrorFree &=  MovePinLinksToIntermediate(
-		FindPin(UEdGraphSchema_K2::PN_Execute, EGPD_Input),
-		AddTokenNode->FindPin(UEdGraphSchema_K2::PN_Execute, EGPD_Input)
-	);
-	bIsErrorFree &=  MovePinLinksToIntermediate(
-		FindPin(UEdGraphSchema_K2::PN_Then, EGPD_Output),
-		AddTokenNode->FindPin(UEdGraphSchema_K2::PN_Then, EGPD_Output)
-	);
+	bIsErrorFree &=  MovePinLinksToIntermediate(GetExecPin(), AddTokenNode->GetExecPin());
+	bIsErrorFree &=  MovePinLinksToIntermediate(GetThenPin(), AddTokenNode->GetThenPin());
 	// move chain to knot
-	bIsErrorFree &=  MovePinLinksToIntermediate(
-		FindPin(PN_Chain, EGPD_Output),
-		KnotNode->GetOutputPin()
-	);
+	bIsErrorFree &=  MovePinLinksToIntermediate(FindPinChecked(PN_Chain, EGPD_Output), KnotNode->GetOutputPin());
 
 	if (!bIsErrorFree)
 	{

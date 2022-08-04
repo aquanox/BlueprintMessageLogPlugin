@@ -20,10 +20,7 @@ public:
 	UK2Node_CreateBlueprintMessage();
 
 	virtual void AllocateDefaultPins() override;
-	virtual void PostReconstructNode() override;
 	virtual bool IsNodePure() const override { return false; }
-	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
-	virtual FText GetFunctionContextString() const override;
 
 	virtual void AddInputPin() override;
 	virtual void RemoveInputPin(UEdGraphPin* Pin) override;

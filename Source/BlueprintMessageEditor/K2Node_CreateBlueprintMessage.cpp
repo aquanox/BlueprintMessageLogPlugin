@@ -16,7 +16,7 @@ constexpr bool REFERENCE_INPUT = false;
 
 UK2Node_CreateBlueprintMessage::UK2Node_CreateBlueprintMessage()
 {
-	NumInputs = 1;
+	NumInputs = 0;
 	FunctionReference.SetExternalMember(
 		GET_FUNCTION_NAME_CHECKED(UBlueprintMessage, CreateBlueprintMessage),
 		UBlueprintMessage::StaticClass()
@@ -34,21 +34,6 @@ void UK2Node_CreateBlueprintMessage::AllocateDefaultPins()
 
 		CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Struct, NAME_None, FBlueprintMessageToken::StaticStruct(), GetPinName(Index), PinParams);
 	}
-}
-
-void UK2Node_CreateBlueprintMessage::PostReconstructNode()
-{
-	Super::PostReconstructNode();
-}
-
-FText UK2Node_CreateBlueprintMessage::GetNodeTitle(ENodeTitleType::Type TitleType) const
-{
-	return Super::GetNodeTitle(TitleType);
-}
-
-FText UK2Node_CreateBlueprintMessage::GetFunctionContextString() const
-{
-	return Super::GetFunctionContextString();
 }
 
 FName UK2Node_CreateBlueprintMessage::GetPinName(int32 PinIndex) const
@@ -78,28 +63,6 @@ void UK2Node_CreateBlueprintMessage::SyncPinNames()
 
 			CurrentPin->Modify();
 			CurrentPin->PinName = ElementName;
-
-			if (CurrentPin->SubPins.Num() > 0)
-			{
-				const FString OldNameStr = OldName.ToString();
-				const FString ElementNameStr = ElementName.ToString();
-				FString OldFriendlyName = OldNameStr;
-				FString ElementFriendlyName = ElementNameStr;
-
-				// SubPin Friendly Name has an extra space in it so we need to account for that
-				OldFriendlyName.InsertAt(1, " ");
-				ElementFriendlyName.InsertAt(1, " ");
-
-				for (UEdGraphPin* SubPin : CurrentPin->SubPins)
-				{
-					FString SubPinFriendlyName = SubPin->PinFriendlyName.ToString();
-					SubPinFriendlyName.ReplaceInline(*OldFriendlyName, *ElementFriendlyName);
-
-					SubPin->Modify();
-					SubPin->PinName = *SubPin->PinName.ToString().Replace(*OldNameStr, *ElementNameStr);
-					SubPin->PinFriendlyName = FText::FromString(SubPinFriendlyName);
-				}
-			}
 		}
 	}
 }
@@ -247,6 +210,7 @@ void UK2Node_CreateBlueprintMessage::ExpandNode(FKismetCompilerContext& Compiler
 	UK2Node_CallFunction* CreateNode = CompilerContext.SpawnIntermediateNode<UK2Node_CallFunction>(this, SourceGraph);
 	CreateNode->FunctionReference = FunctionReference;
 	CreateNode->AllocateDefaultPins();
+	CompilerContext.MessageLog.NotifyIntermediateObjectCreation(CreateNode, this);
 
 	bIsErrorFree &= MovePinLinksToIntermediate(this, UEdGraphSchema_K2::PN_Execute, CreateNode, UEdGraphSchema_K2::PN_Execute);
 	bIsErrorFree &= MovePinLinksToIntermediate(this, TEXT("LogCategory"), CreateNode, TEXT("LogCategory"));
@@ -256,6 +220,7 @@ void UK2Node_CreateBlueprintMessage::ExpandNode(FKismetCompilerContext& Compiler
 	UK2Node_CallFunction* AddTokensNode = CompilerContext.SpawnIntermediateNode<UK2Node_CallFunction>(this, SourceGraph);
 	AddTokensNode->FunctionReference.SetExternalMember(GET_FUNCTION_NAME_CHECKED(UBlueprintMessage, AddTokens), UBlueprintMessage::StaticClass());
 	AddTokensNode->AllocateDefaultPins();
+	CompilerContext.MessageLog.NotifyIntermediateObjectCreation(AddTokensNode, this);
 
 	// Connect Target to result of Create Message
 	AddTokensNode->FindPinChecked(UEdGraphSchema_K2::PN_Self)->MakeLinkTo(CreateNode->GetReturnValuePin());
@@ -266,6 +231,7 @@ void UK2Node_CreateBlueprintMessage::ExpandNode(FKismetCompilerContext& Compiler
 	UK2Node_MakeArray* MakeArrayNode = CompilerContext.SpawnIntermediateNode<UK2Node_MakeArray>(this, SourceGraph);
 	MakeArrayNode->NumInputs = DynamicPins.Num();
 	MakeArrayNode->AllocateDefaultPins();
+	CompilerContext.MessageLog.NotifyIntermediateObjectCreation(MakeArrayNode, this);
 
 	// Connect the output of the "Make Array" pin to "Tokens"
 	// PinConnectionListChanged will set the "Make Array" node's type, only works if one pin is connected
@@ -284,9 +250,9 @@ void UK2Node_CreateBlueprintMessage::ExpandNode(FKismetCompilerContext& Compiler
 	}
 
 	// Connect Then
-	MovePinLinksToIntermediate(this, UEdGraphSchema_K2::PN_Then, AddTokensNode, UEdGraphSchema_K2::PN_Then);
+	bIsErrorFree &= MovePinLinksToIntermediate(this, UEdGraphSchema_K2::PN_Then, AddTokensNode, UEdGraphSchema_K2::PN_Then);
 	// Connect Return Value
-	MovePinLinksToIntermediate(this, UEdGraphSchema_K2::PN_ReturnValue, CreateNode, UEdGraphSchema_K2::PN_ReturnValue);
+	bIsErrorFree &= MovePinLinksToIntermediate(this, UEdGraphSchema_K2::PN_ReturnValue, CreateNode, UEdGraphSchema_K2::PN_ReturnValue);
 
 	if (!bIsErrorFree)
 	{

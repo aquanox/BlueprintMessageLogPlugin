@@ -22,7 +22,6 @@ public:
 	UK2Node_AddBlueprintMessageToken();
 
 	virtual void AllocateDefaultPins() override;
-	virtual void PostReconstructNode() override;
 	virtual bool IsNodePure() const override { return false; }
 
 	UFunction* GetFactoryFunction() const;

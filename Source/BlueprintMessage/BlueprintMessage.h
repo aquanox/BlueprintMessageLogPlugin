@@ -49,19 +49,19 @@ public:
 	 * Duplicate message and return its copy
 	 */
 	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage")
-	UBlueprintMessage* Duplicate();
+	UPARAM(DisplayName="Message") UBlueprintMessage* Duplicate();
 
 	/* Add token to this message */
 	UFUNCTION(BlueprintCallable, meta=(AutoCreateRefTerm="Token"), Category="Utilities|BlueprintMessage")
-	UBlueprintMessage* AddToken(const FBlueprintMessageToken& Token, FName Slot = NAME_None);
+	UPARAM(DisplayName="Message") UBlueprintMessage* AddToken(const FBlueprintMessageToken& Token, FName Slot = NAME_None);
 
 	/* Add multiple tokens to this message */
 	UFUNCTION(BlueprintCallable, meta=(AutoCreateRefTerm="Tokens"), Category="Utilities|BlueprintMessage")
-	UBlueprintMessage* AddTokens(const TArray<FBlueprintMessageToken>& Tokens);
+	UPARAM(DisplayName="Message") UBlueprintMessage* AddTokens(const TArray<FBlueprintMessageToken>& Tokens);
 
 	/* Clear all tokens in this message */
 	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage")
-	UBlueprintMessage* ClearTokens();
+	UPARAM(DisplayName="Message") UBlueprintMessage* ClearTokens();
 
 	/* Show message in Message Log */
 	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage")
@@ -73,15 +73,15 @@ public:
 
 	/* Add a token slot with name */
 	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage")
-	UBlueprintMessage* AddNamedSlot(FName Name);
+	UPARAM(DisplayName="Message") UBlueprintMessage* AddNamedSlot(FName Name);
 
 	/* Remove token slot with specified name */
 	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage")
-	UBlueprintMessage* RemoveNamedSlot(FName Name);
+	UPARAM(DisplayName="Message") UBlueprintMessage* RemoveNamedSlot(FName Name);
 
 	/** Change severity for this message */
 	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage")
-	UBlueprintMessage* SetSeverity(EBlueprintMessageSeverity Severity);
+	UPARAM(DisplayName="Message") UBlueprintMessage* SetSeverity(EBlueprintMessageSeverity Severity);
 
 protected:
 

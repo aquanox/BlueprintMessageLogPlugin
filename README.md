@@ -33,15 +33,15 @@ Tested with 5.0, ue5-main and can be modified to work with other engine versions
 
 ## Examples
 
-Minimal "Hello World"
+Minimal "Hello World" can be as simple as this
 
 ![](Images/BMP-HelloWorld.png)
 
-Can build message out of tokens directly
+You can also build message out of tokens directly
 
 ![](Images/BMP-CreateMessage.png)
 
-A simple message with reference to actor in world
+A simple message with reference to actor in world to locate it in one click
 
 ![](Images/BMP-ActorToken.png)
 
@@ -49,11 +49,15 @@ A simple message with executable action (in PIE only)
 
 ![](Images/BMP-ActionToken.png)
 
-A simple message to prompt activation of Editor Utility Widget
+A simple message with action that activates an Editor Utility Widget
 
 ![](Images/BMP-EditorUtilityToken.png)
 
-A simple usage example of message slots
+You don't need to make separate Format nodes as "Add Formatted Text Token" exists
+
+![](Images/BMP-FormattedToken.png)
+
+Slots can be used to further format messages and replace tokens while building
 
 ![](Images/BMP-Slots.png)
 
