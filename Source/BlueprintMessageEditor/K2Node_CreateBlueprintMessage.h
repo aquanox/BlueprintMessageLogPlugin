@@ -16,7 +16,6 @@ class UK2Node_CreateBlueprintMessage : public UK2Node_CallFunction, public IK2No
 {
 	GENERATED_BODY()
 public:
-
 	UK2Node_CreateBlueprintMessage();
 
 	virtual void AllocateDefaultPins() override;
@@ -38,7 +37,6 @@ public:
 	virtual void ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph) override;
 
 protected:
-
 	/** The number of input pins to generate for this node */
 	UPROPERTY()
 	int32 NumInputs;

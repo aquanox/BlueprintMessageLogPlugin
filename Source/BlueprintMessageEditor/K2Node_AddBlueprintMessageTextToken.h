@@ -15,10 +15,6 @@ class UK2Node_AddBlueprintMessageTextToken : public UK2Node_CallFunction
 	GENERATED_BODY()
 
 public:
-	static const FName PN_MessagePinName;
-	static const FName PN_SlotPinName;
-	static const FName PN_FormatPinName;
-
 	UK2Node_AddBlueprintMessageTextToken();
 
 	//~ Begin UObject Interface
@@ -29,21 +25,21 @@ public:
 	virtual void AllocateDefaultPins() override;
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
 	virtual bool ShouldShowNodeProperties() const override { return Super::ShouldShowNodeProperties(); }
-	virtual void PinConnectionListChanged(UEdGraphPin * Pin) override;
-	virtual void PinDefaultValueChanged(UEdGraphPin * Pin) override;
-	virtual void PinTypeChanged(UEdGraphPin * Pin) override;
+	virtual void PinConnectionListChanged(UEdGraphPin* Pin) override;
+	virtual void PinDefaultValueChanged(UEdGraphPin* Pin) override;
+	virtual void PinTypeChanged(UEdGraphPin* Pin) override;
 	virtual FText GetTooltipText() const override;
-	virtual FText GetPinDisplayName(const UEdGraphPin * Pin) const override;
+	virtual FText GetPinDisplayName(const UEdGraphPin* Pin) const override;
 	//~ End UEdGraphNode Interface.
 
 	//~ Begin UK2Node Interface.
 	virtual bool IsNodePure() const override { return false; }
 	virtual bool NodeCausesStructuralBlueprintChange() const override { return true; }
 	virtual void PostReconstructNode() override;
-	virtual void ExpandNode(class FKismetCompilerContext& CompilerContext, UEdGraph * SourceGraph) override;
-	virtual ERedirectType DoPinsMatchForReconstruction(const UEdGraphPin * NewPin, int32 NewPinIndex, const UEdGraphPin * OldPin, int32 OldPinIndex) const override;
-	virtual bool IsConnectionDisallowed(const UEdGraphPin * MyPin, const UEdGraphPin * OtherPin, FString & OutReason) const override;
-	virtual void GetMenuActions(FBlueprintActionDatabaseRegistrar & ActionRegistrar) const override;
+	virtual void ExpandNode(class FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph) override;
+	virtual ERedirectType DoPinsMatchForReconstruction(const UEdGraphPin* NewPin, int32 NewPinIndex, const UEdGraphPin* OldPin, int32 OldPinIndex) const override;
+	virtual bool IsConnectionDisallowed(const UEdGraphPin* MyPin, const UEdGraphPin* OtherPin, FString& OutReason) const override;
+	virtual void GetMenuActions(FBlueprintActionDatabaseRegistrar& ActionRegistrar) const override;
 	virtual FText GetMenuCategory() const override;
 	//~ End UK2Node Interface.
 
@@ -80,10 +76,10 @@ public:
 	UEdGraphPin* GetSelfPin() const { return FindInputPin(UEdGraphSchema_K2::PN_Self); }
 
 	/** returns Slot pin */
-	UEdGraphPin* GetSlotPin() const { return FindInputPin(PN_SlotPinName); }
+	UEdGraphPin* GetSlotPin() const;
 
 	/** returns Format pin */
-	UEdGraphPin* GetFormatPin() const { return FindInputPin(PN_FormatPinName); }
+	UEdGraphPin* GetFormatPin() const;
 
 	/** Returns TRUE if the arguments are allowed to be edited */
 	bool CanEditArguments() const { return GetFormatPin()->LinkedTo.Num() > 0; }
@@ -101,7 +97,7 @@ private:
 	bool IsPermanentPin(const UEdGraphPin* Pin) const;
 
 	/** Synchronize the type of the given argument pin with the type its connected to, or reset it to a wildcard pin if there's no connection */
-	void SynchronizeArgumentPinType(UEdGraphPin * Pin);
+	void SynchronizeArgumentPinType(UEdGraphPin* Pin);
 
 	/** Returns a unique pin name to use for a pin */
 	FName GetUniquePinName();

@@ -20,11 +20,10 @@ Note: plugin is at experimental stage, things may change a lot.
    * FImageToken - image 
    * FTutorialToken - reference to tutorial asset
    * FDocumentationToken - reference to documentation 
-   * FDynamicTextToken (Soon...)
-   * FActionToken (Soon...)
+   * FDynamicTextToken - dynamically updating text
+   * FActionToken - execute blueprint delegate on click
    * FEditorUtilityToken - activates Blutility Widget
  * Message Slots - reserve a spot and fill it with token afterwards!
- * Custom blueprint graph nodes for Create Message and Add Token (Soon...)
  * Custom tokens support
 
 ## Unreal Engine Versions
