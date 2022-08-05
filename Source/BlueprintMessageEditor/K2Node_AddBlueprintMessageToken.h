@@ -37,6 +37,8 @@ public:
 	virtual void ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph) override;
 	virtual void ValidateNodeDuringCompilation(FCompilerResultsLog& MessageLog) const override;
 
+	virtual FString GetPinMetaData(FName InPinName, FName InKey) override;
+
 protected:
 	UPROPERTY()
 	FMemberReference FactoryReference;

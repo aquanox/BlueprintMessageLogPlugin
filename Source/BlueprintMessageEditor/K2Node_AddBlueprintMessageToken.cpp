@@ -31,10 +31,10 @@ void UK2Node_AddBlueprintMessageToken::AllocateDefaultPins()
 	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Exec, UEdGraphSchema_K2::PN_Execute);
 	CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Exec, UEdGraphSchema_K2::PN_Then);
 
-	UEdGraphPin* ChainIn = CreateSelfPin(GetTargetFunction());
-	ChainIn->PinFriendlyName = LOCTEXT( "Target", "Target");
+	UEdGraphPin* SelfPin = CreateSelfPin(GetTargetFunction());
+	SelfPin->PinFriendlyName = LOCTEXT( "Target", "Target");
 
-	UEdGraphPin* ChainOut = CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Object, NAME_None, UBlueprintMessage::StaticClass(),	PN_Chain);
+	CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Object, NAME_None, UBlueprintMessage::StaticClass(),	PN_Chain);
 
 	// Create other param pins
 	UEdGraphPin* SlotPin = CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Name, PN_Slot);
@@ -278,6 +278,37 @@ void UK2Node_AddBlueprintMessageToken::ValidateNodeDuringCompilation(FCompilerRe
 		FText const WarningFormat = LOCTEXT("FunctionNotFoundFmt", "Could not find a function named \"{0}\" in '{1}'.\nMake sure '{2}' has been compiled for @@");
 		MessageLog.Error(*FText::Format(WarningFormat, FText::FromString(FunctName), FText::FromString(OwnerName), FText::FromString(OwnerName)).ToString(), this);
 	}
+}
+
+FString UK2Node_AddBlueprintMessageToken::GetPinMetaData(FName InPinName, FName InKey)
+{
+	FString MetaData = Super::GetPinMetaData(InPinName, InKey);
+
+	// If there's no metadata directly on the pin then check for metadata on the function
+	if (MetaData.IsEmpty())
+	{
+		if (UFunction* Function = GetFactoryFunction())
+		{
+			// Find the corresponding property for the pin and search that first
+			if (FProperty* Property = Function->FindPropertyByName(InPinName))
+			{
+				MetaData = Property->GetMetaData(InKey);
+			}
+
+			// Also look for metadata like DefaultToSelf on the function itself
+			if (MetaData.IsEmpty())
+			{
+				MetaData = Function->GetMetaData(InKey);
+				if (MetaData != InPinName.ToString())
+				{
+					// Only return if the value matches the pin name as we don't want general function metadata
+					MetaData.Empty();
+				}
+			}
+		}
+	}
+
+	return MetaData;
 }
 
 #undef LOCTEXT_NAMESPACE
