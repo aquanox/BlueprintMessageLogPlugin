@@ -1,4 +1,4 @@
-## Blueprint Message Plugin for Unreal Engine
+## Blueprint Message Log Plugin for Unreal Engine
 
 Are you still printing plain text to output? Discover Message Log! Create rich interactive messages with different contents with little of blueprint.
 

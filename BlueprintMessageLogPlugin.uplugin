@@ -1,0 +1,33 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "0.1",
+	"FriendlyName": "Blueprint Message Log Plugin",
+	"Description": "Plugin that nodes to interact with Message Log",
+	"Category": "Editor",
+	"CreatedBy": "Aquanox",
+	"CreatedByURL": "https://github.com/aquanox/BlueprintMessagePlugin",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "https://github.com/aquanox/BlueprintMessagePlugin/issues",
+	"EnabledByDefault": true,
+	"CanContainContent": true,
+	"IsBetaVersion": true,
+	"IsExperimentalVersion": true,
+	"Installed": false,
+	"EngineVersion": "",
+	"Modules": [
+		{
+			"Name": "BlueprintMessage",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [ "Win64", "Mac", "Linux" ]
+		},
+		{
+			"Name": "BlueprintMessageEditor",
+			"Type": "UncookedOnly",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [ "Win64", "Mac", "Linux" ]
+		}
+	]
+}
