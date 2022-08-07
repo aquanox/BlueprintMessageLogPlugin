@@ -15,7 +15,7 @@
 	"IsBetaVersion": true,
 	"IsExperimentalVersion": true,
 	"Installed": false,
-	"EngineVersion": "",
+	"EngineVersion": "5.0",
 	"Modules": [
 		{
 			"Name": "BlueprintMessage",
