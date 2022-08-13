@@ -49,6 +49,23 @@ static_assert((int32)EBlueprintMessageSeverity::PerformanceWarning == EMessageSe
 static_assert((int32)EBlueprintMessageSeverity::Warning == EMessageSeverity::Warning);
 static_assert((int32)EBlueprintMessageSeverity::Info == EMessageSeverity::Info);
 
+UENUM(BlueprintType)
+enum class EBlueprintMessageShowMode : uint8
+{
+	/**
+	 * @brief Do nothing
+	 */
+	Default,
+	/**
+	 * @brief Open message log window if messages are available
+	 */
+	Open,
+	/**
+	 * @brief Always open message log
+	 */
+	OpenAlways
+};
+
 /**
  * Struct representing a message token factory registration
  */

@@ -23,6 +23,25 @@ UBlueprintMessage* UBlueprintMessage::CreateSimpleBlueprintMessage(FName LogCate
 	return Object;
 }
 
+void UBlueprintMessage::MessageLogOpen(FName Category, EBlueprintMessageSeverity Severity, bool bForce)
+{
+	const FName ActualCategory = Category.IsNone() ? TEXT("BlueprintLog") : Category;
+	FMessageLog(ActualCategory).Open(
+		static_cast<EMessageSeverity::Type>(Severity),
+		bForce
+	);
+}
+
+void UBlueprintMessage::MessageLogNotify(FText Message, FName Category, EBlueprintMessageSeverity Severity, bool bForce)
+{
+	const FName ActualCategory = Category.IsNone() ? TEXT("BlueprintLog") : Category;
+	FMessageLog(ActualCategory).Notify(
+		Message,
+		static_cast<EMessageSeverity::Type>(Severity),
+		bForce
+	);
+}
+
 UBlueprintMessage::UBlueprintMessage()
 {
 }
@@ -98,18 +117,18 @@ UBlueprintMessage* UBlueprintMessage::ClearTokens()
 void UBlueprintMessage::Show()
 {
 #if WITH_EDITOR
-	FName ActualCategory = Category.IsNone() ? TEXT("BlueprintLog") : Category;
-	FMessageLog(ActualCategory).AddMessage(BuildMessage());
+	const FName ActualCategory = Category.IsNone() ? TEXT("BlueprintLog") : Category;
+	ShowImpl(ActualCategory, BuildMessage());
 #endif
 }
 
 void UBlueprintMessage::ShowAndPrint(bool bPrintToScreen, bool bPrintToLog, FLinearColor TextColor, float Duration, const FName Key)
 {
 #if WITH_EDITOR
-	auto MessagePtr = BuildMessage();
+	const FName ActualCategory = Category.IsNone() ? TEXT("BlueprintLog") : Category;
+	TSharedRef<FTokenizedMessage> MessagePtr = BuildMessage();
 
-	FName ActualCategory = Category.IsNone() ? TEXT("BlueprintLog") : Category;
-	FMessageLog(ActualCategory).AddMessage(MessagePtr);
+	ShowImpl(ActualCategory, MessagePtr);
 
 	FString LongMessage;
 	LongMessage.Append(ActualCategory.ToString());
@@ -119,6 +138,15 @@ void UBlueprintMessage::ShowAndPrint(bool bPrintToScreen, bool bPrintToLog, FLin
 	UKismetSystemLibrary::PrintText(nullptr, FText::FromString(LongMessage), bPrintToScreen, bPrintToLog, TextColor, Duration, Key);
 #endif
 }
+
+void UBlueprintMessage::ShowImpl(const FName& InCategory, const TSharedRef<FTokenizedMessage>& InMessage) const
+{
+	FMessageLog Log(InCategory);
+	Log.SuppressLoggingToOutputLog(bSuppressLoggingToOutputLog);
+	Log.AddMessage(InMessage);
+	// ~FMessageLog() -> Flush()
+}
+
 
 TSharedRef<FTokenizedMessage> UBlueprintMessage::BuildMessage() const
 {

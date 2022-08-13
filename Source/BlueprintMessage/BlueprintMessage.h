@@ -41,6 +41,26 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage", meta=(AdvancedDisplay=3))
 	static UBlueprintMessage* CreateSimpleBlueprintMessage(UPARAM(DisplayName="Category") FName LogCategory = TEXT("BlueprintLog"), EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info, FText Message = INVTEXT(""), bool bShow = false);
 
+	/**
+	 * Opens the log for display to the user given certain conditions.
+	 *
+	 * @param LogCategory Log category name
+	 * @param Severity Only messages of higher severity than this filter will be considered when checking.
+	 * @param bForce Override the filter & log status & force the log to open.
+	 */
+	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage")
+	static void MessageLogOpen(UPARAM(DisplayName="Category") FName LogCategory = TEXT("BlueprintLog"), EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info, bool bForce = false);
+
+	/**
+	 * Notify the user with a message if there are messages present.
+	 *
+	 * @param Message The notification message.
+	 * @param LogCategory Log category name
+	 * @param Severity Only messages of higher severity than this filter will be considered when checking.
+	 * @param bForce Notify anyway, even if the filters gives us no messages.
+	 */
+	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage")
+	static void MessageLogNotify(FText Message = INVTEXT(""), UPARAM(DisplayName="Category") FName LogCategory = TEXT("BlueprintLog"), EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info, bool bForce = false);
 
 	/* constructor */
 	UBlueprintMessage();
@@ -63,8 +83,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage")
 	UPARAM(DisplayName="Message") UBlueprintMessage* ClearTokens();
 
-	/* Show message in Message Log */
-	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage")
+	/*
+	 * Show message in Message Log
+	 *
+	 * @param bOpenLog Open Message Log window
+	 */
+	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage", meta=(AdvancedDisplay=0))
 	void Show();
 
 	/* Show message in message Log and print it on screen */
@@ -86,6 +110,7 @@ public:
 protected:
 
 	TSharedRef<FTokenizedMessage> BuildMessage() const;
+	void ShowImpl(const FName& InCategory, const TSharedRef<FTokenizedMessage>& InMessage) const;
 
 	UPROPERTY()
 	FName Category;
@@ -93,6 +118,10 @@ protected:
 	EBlueprintMessageSeverity Severity;
 	UPROPERTY()
 	FText InitialMessage;
+	/** Stream of tokens for this message */
 	UPROPERTY()
 	TArray<FBlueprintMessageToken> Tokens;
+	/** Should we mirror message log messages from this instance to the output log? */
+	UPROPERTY(BlueprintReadWrite, meta=(AllowPrivateAccess))
+	bool bSuppressLoggingToOutputLog = false;
 };
