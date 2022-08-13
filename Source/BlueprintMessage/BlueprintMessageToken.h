@@ -20,12 +20,14 @@ struct BLUEPRINTMESSAGE_API FBlueprintMessageToken
 
 	FBlueprintMessageToken() = default;
 	FBlueprintMessageToken(FName InSlot);
-	FBlueprintMessageToken(TSharedRef<class IMessageToken> InToken);
+	FBlueprintMessageToken(TSharedRef<IMessageToken> InToken);
 
 	bool operator==(const FName& Other) const { return Name == Other; }
 
+	/* Token name */
 	FName Name;
-	TSharedPtr<class IMessageToken> Data;
+	/* Token instance */
+	TSharedPtr<IMessageToken> Data;
 };
 
 /**
@@ -46,39 +48,6 @@ static_assert((int32)EBlueprintMessageSeverity::Error == EMessageSeverity::Error
 static_assert((int32)EBlueprintMessageSeverity::PerformanceWarning == EMessageSeverity::PerformanceWarning);
 static_assert((int32)EBlueprintMessageSeverity::Warning == EMessageSeverity::Warning);
 static_assert((int32)EBlueprintMessageSeverity::Info == EMessageSeverity::Info);
-
-/**
- * Enumeration of supported message token types
- */
-UENUM()
-enum class EBlueprintMessageTokenType
-{
-	Action,
-	Actor,
-	AssetName,
-	Documentation,
-	Image,
-	Object,
-	Severity,
-	Text,
-	Tutorial,
-	URL,
-	EdGraph,
-	DynamicText,
-};
-
-static_assert((int32)EBlueprintMessageTokenType::Action == EMessageToken::Action);
-static_assert((int32)EBlueprintMessageTokenType::Actor == EMessageToken::Actor);
-static_assert((int32)EBlueprintMessageTokenType::AssetName == EMessageToken::AssetName);
-static_assert((int32)EBlueprintMessageTokenType::Documentation == EMessageToken::Documentation);
-static_assert((int32)EBlueprintMessageTokenType::Image == EMessageToken::Image);
-static_assert((int32)EBlueprintMessageTokenType::Object == EMessageToken::Object);
-static_assert((int32)EBlueprintMessageTokenType::Severity == EMessageToken::Severity);
-static_assert((int32)EBlueprintMessageTokenType::Text == EMessageToken::Text);
-static_assert((int32)EBlueprintMessageTokenType::Tutorial == EMessageToken::Tutorial);
-static_assert((int32)EBlueprintMessageTokenType::URL == EMessageToken::URL);
-static_assert((int32)EBlueprintMessageTokenType::EdGraph == EMessageToken::EdGraph);
-static_assert((int32)EBlueprintMessageTokenType::DynamicText == EMessageToken::DynamicText);
 
 /**
  * Struct representing a message token factory registration

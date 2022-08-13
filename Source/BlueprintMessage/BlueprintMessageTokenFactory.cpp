@@ -1,13 +1,11 @@
 ﻿// Copyright 2022, Aquanox.
 
 #include "BlueprintMessageTokenFactory.h"
+
+#include "BlueprintMessageHelpers.h"
 #include "Misc/UObjectToken.h"
 
-#if WITH_EDITOR
-#include "EditorUtilitySubsystem.h"
-#include "EditorUtilityWidget.h"
-#include "EditorUtilityWidgetBlueprint.h"
-#endif
+
 
 // IMessageToken
 //  FTextToken | implemented
@@ -49,47 +47,46 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeObjectToken(UObject* V
 	return FBlueprintMessageToken(FUObjectToken::Create(Value, Label));
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeAssetToken(UObject* Value, FText Message)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeAssetToken(UObject* Value, FText Label)
 {
 	if (UClass* const AsClass = Cast<UClass>(Value))
 	{
-		return MakeClassPathToken(FSoftClassPath(AsClass), Message);
+		return MakeSoftClassPathToken(FSoftClassPath(AsClass), Label);
 	}
 	else
 	{
-		return MakeAssetPathToken(FSoftObjectPath(Value), Message);
+		return MakeSoftAssetPathToken(FSoftObjectPath(Value), Label);
 	}
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeAssetSoftPtrToken(TSoftObjectPtr<UObject> Value, FText Message)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeSoftAssetToken(TSoftObjectPtr<UObject> Value, FText Label)
 {
-	return MakeAssetPathToken(Value.ToSoftObjectPath(), Message);
+	return MakeAssetPathToken(Value.ToSoftObjectPath().ToString(), Label);
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeClassSoftPtrToken(TSoftClassPtr<UObject> Value, FText Message)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeSoftClassToken(TSoftClassPtr<UObject> Value, FText Label)
 {
-	return MakeAssetPathToken(Value.ToSoftObjectPath(), Message);
+	return MakeAssetPathToken(Value.ToSoftObjectPath().ToString(), Label);
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeClassPathToken(FSoftClassPath Value, FText Message)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeSoftClassPathToken(FSoftClassPath Value, FText Label)
 {
-	return MakeAssetPathToken(Value, Message);
+	return MakeAssetPathToken(Value.ToString(), Label);
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeAssetPathToken(FSoftObjectPath Value, FText Message)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeSoftAssetPathToken(FSoftObjectPath Value, FText Label)
 {
-	FString InAssetName = !Value.IsNull() ? Value.ToString() : TEXT("Unknown");
-	return MakeAssetPathToken_Internal(InAssetName, Message);
+	return MakeAssetPathToken(Value.ToString(), Label);
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeAssetPathToken_Internal(FString AssetPath, FText Message)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeAssetPathToken(FString AssetPath, FText Label)
 {
-	Message = Message.IsEmpty() ? FText::FromString(FPackageName::GetShortName(AssetPath)) : Message;
-	return FBlueprintMessageToken(FAssetNameToken::Create(AssetPath, Message));
+	//Label = Label.IsEmpty() ? FText::FromString(FPackageName::GetShortName(AssetPath)) : Label;
+	return FBlueprintMessageToken(FAssetNameToken::Create(AssetPath, Label));
 }
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeImageToken(FName Value)
-{ // FAppStyle::Get().GetBrush(ImageToken->GetImageName())
+{
 	return FBlueprintMessageToken(FImageToken::Create(Value));
 }
 
@@ -104,65 +101,55 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeActorToken(AActor* Val
 	return FBlueprintMessageToken(FActorToken::Create(ActorPath, Guid, Message));
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeTutorialToken(FString Value)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeTutorialToken(TSoftObjectPtr<UBlueprint> Value)
 {
-	return FBlueprintMessageToken(FTutorialToken::Create(Value));
+	return FBlueprintMessageToken(FTutorialToken::Create(Value.GetLongPackageName()));
 }
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeDocumentationToken(FString Value)
-{ // Engine/Animation/AnimBlueprints/AnimGraph
+{
 	return FBlueprintMessageToken(FDocumentationToken::Create(Value));
 }
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeDynamicTextToken_Delegate(FGetMessageDynamicText Value)
 {
-	return FBlueprintMessageToken(FDynamicTextToken::Create(MakeAttributeLambda([Value]()
+	TAttribute<FText> Attribute;
+	if (Value.IsBound())
 	{
-		return Value.IsBound() ? Value.Execute() : FText::GetEmpty();
-	})));
+		Attribute.BindUFunction(Value.GetUObject(), Value.GetFunctionName());
+	}
+	return FBlueprintMessageToken(FDynamicTextToken::Create(Attribute));
 }
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeDynamicTextToken_Function(UObject* Object, FName FunctionName)
 {
 	TAttribute<FText> Attribute;
-	Attribute.BindUFunction(Object, FunctionName);
+	if (IsValid(Object) && !FunctionName.IsNone())
+	{
+		Attribute.BindUFunction(Object, FunctionName);
+	}
 	return FBlueprintMessageToken(FDynamicTextToken::Create(Attribute));
 }
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeActionToken(FText Name, FText Description, const FBlueprintMessageActionDelegate& Action, bool bInSingleUse)
 {
 	return FBlueprintMessageToken(
-		FActionToken::Create(Name, Description, FOnActionTokenExecuted::CreateLambda([Action]()
-		{
-			if (Action.IsBound())
-			{
-				Action.Execute();
-			}
-		}), bInSingleUse)
+		FActionToken::Create(Name, Description,
+			FOnActionTokenExecuted::CreateStatic(FBlueprintMessageHelpers::InvokeDelegate, Action),
+			bInSingleUse)
 	);
 }
 
-FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeEditorUtilityWidgetToken(TSoftObjectPtr<UBlueprint> Widget, FText ActionName, FText Description)
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeEditorUtilityWidgetToken(TSoftObjectPtr<UBlueprint> Widget, FText ActionName, FText Description, bool bSingleUse)
 {
-#if WITH_EDITOR
 	const FString WidgetAssetName = Widget.GetAssetName();
 
-	ActionName = !(ActionName.IsEmpty()) ? ActionName
+	ActionName = !ActionName.IsEmpty() ? ActionName
 				: !WidgetAssetName.IsEmpty() ? FText::FromString(WidgetAssetName) : INVTEXT("Action");
 
 	return FBlueprintMessageToken(
-		FActionToken::Create(ActionName, Description, FOnActionTokenExecuted::CreateLambda([Widget]()
-		{
-			if (UObject* WidgetClass = Widget.LoadSynchronous())
-			{
-				if (UEditorUtilityWidgetBlueprint* EditorWidget = Cast<UEditorUtilityWidgetBlueprint>(WidgetClass))
-				{
-					GEditor->GetEditorSubsystem<UEditorUtilitySubsystem>()->SpawnAndRegisterTab(EditorWidget);
-				}
-			}
-		}), false)
+		FActionToken::Create(ActionName, Description,
+			FOnActionTokenExecuted::CreateStatic(FBlueprintMessageHelpers::SpawnEditorUtilityWidget, Widget),
+			bSingleUse)
 	);
-#else
-	return FBlueprintMessageToken();
-#endif
 }
