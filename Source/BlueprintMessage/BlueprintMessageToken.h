@@ -10,6 +10,18 @@ DECLARE_DYNAMIC_DELEGATE_RetVal(FText, FGetMessageDynamicText);
 DECLARE_DYNAMIC_DELEGATE_RetVal(FText, FGetMessageDynamicString);
 DECLARE_DYNAMIC_DELEGATE(FBlueprintMessageActionDelegate);
 
+/** Delegate used when clicking a message token */
+DECLARE_DELEGATE_OneParam(FOnBlueprintMessageTokenActivated, const struct FBlueprintMessageToken&);
+
+/**
+ * Hack around message tokens being non-extensible and hardcoded in engine.
+ * Inherit this struct to provide data to token and use constructor taking it
+ */
+struct BLUEPRINTMESSAGE_API FBlueprintMessageTokenData : public TSharedFromThis<FBlueprintMessageTokenData>
+{
+public:
+};
+
 /**
  * Wrapper-container for generic message token to pass around in blueprint
  */
@@ -17,17 +29,31 @@ USTRUCT(BlueprintType, meta=(HiddenByDefault, DisableSplitPin))
 struct BLUEPRINTMESSAGE_API FBlueprintMessageToken
 {
 	GENERATED_BODY()
-
+public:
 	FBlueprintMessageToken() = default;
-	FBlueprintMessageToken(FName InSlot);
-	FBlueprintMessageToken(TSharedRef<IMessageToken> InToken);
+	FBlueprintMessageToken(const FName& InSlot);
+	FBlueprintMessageToken(TSharedRef<IMessageToken>&& InToken);
+	FBlueprintMessageToken(TSharedRef<IMessageToken>&& InToken, TSharedRef<FBlueprintMessageTokenData>&& InCustomData);
 
 	bool operator==(const FName& Other) const { return Name == Other; }
+
+	/* Get the type of this message token */
+	EMessageToken::Type GetType() const { return Instance.IsValid() ? Instance->GetType() : static_cast<EMessageToken::Type>(-1); }
+	/* Does this token have custom data present */
+	bool HasData() const { return Data.IsValid(); }
+	/* Get the custom data for this token of specific type */
+	template<typename T = FBlueprintMessageTokenData>
+	T& GetData() const { return StaticCastSharedPtr<T, FBlueprintMessageTokenData>(Data); }
+
+	/** Set token activation processor */
+	void OnMessageTokenActivated(FOnBlueprintMessageTokenActivated&& Delegate);
 
 	/* Token name */
 	FName Name;
 	/* Token instance */
-	TSharedPtr<IMessageToken> Data;
+	TSharedPtr<IMessageToken> Instance;
+	/* Token custom data */
+	TSharedPtr<FBlueprintMessageTokenData> Data;
 };
 
 /**
@@ -49,36 +75,16 @@ static_assert((int32)EBlueprintMessageSeverity::PerformanceWarning == EMessageSe
 static_assert((int32)EBlueprintMessageSeverity::Warning == EMessageSeverity::Warning);
 static_assert((int32)EBlueprintMessageSeverity::Info == EMessageSeverity::Info);
 
-UENUM(BlueprintType)
-enum class EBlueprintMessageShowMode : uint8
-{
-	/**
-	 * @brief Do nothing
-	 */
-	Default,
-	/**
-	 * @brief Open message log window if messages are available
-	 */
-	Open,
-	/**
-	 * @brief Always open message log
-	 */
-	OpenAlways
-};
-
 /**
  * Struct representing a message token factory registration
  */
 struct BLUEPRINTMESSAGE_API FMessageTokenFactoryRegistration
 {
-	TWeakObjectPtr<UClass> FactoryClass;
-	FName FunctionName;
+	static const FName MD_TokenFactoryFunction;
+	static const FName MD_TokenFactoryName;
 
 	FMessageTokenFactoryRegistration() = default;
 	FMessageTokenFactoryRegistration(UFunction* Function);
-
-	static const FName MD_TokenFactoryFunction;
-	static const FName MD_TokenFactoryName;
 
 	/**
 	 * Does the function matches factory standard.
@@ -89,7 +95,7 @@ struct BLUEPRINTMESSAGE_API FMessageTokenFactoryRegistration
 	 * - Pure
 	 * - Returns FBlueprintMessageToken
 	 */
-	static bool IsTokenFactoryFunction(UFunction& Function);
+	static bool IsTokenFactoryFunction(UFunction* Function);
 
 	/**
 	 *
@@ -101,4 +107,10 @@ struct BLUEPRINTMESSAGE_API FMessageTokenFactoryRegistration
 		return Lhs.FactoryClass == RHS.FactoryClass
 			&& Lhs.FunctionName == RHS.FunctionName;
 	}
+
+public:
+	/* */
+	TWeakObjectPtr<UClass> FactoryClass;
+	/* */
+	FName FunctionName;
 };

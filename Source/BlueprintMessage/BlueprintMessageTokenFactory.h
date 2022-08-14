@@ -199,6 +199,6 @@ public:
 	 * @note I wish SAssetPicker had MetaClass for Blueprints
 	 */
 	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
-	static FBlueprintMessageToken MakeEditorUtilityWidgetToken(UPARAM(meta=(AllowedClasses="EditorUtilityWidgetBlueprint")) TSoftObjectPtr<UBlueprint> Widget, FText ActionName, FText Description, bool bSingleUse = false);
+	static FBlueprintMessageToken MakeEditorUtilityWidgetToken(UPARAM(meta=(AllowedClasses="EditorUtilityWidgetBlueprint")) TSoftObjectPtr<UBlueprint> Widget, FText ActionName = INVTEXT(""), FText Description = INVTEXT(""), bool bSingleUse = false);
 
 };

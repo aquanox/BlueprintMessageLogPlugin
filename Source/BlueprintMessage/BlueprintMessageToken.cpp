@@ -1,18 +1,40 @@
 ﻿// Copyright 2022, Aquanox.
 
 #include "BlueprintMessageToken.h"
-#include "BlueprintMessageModule.h"
 #include "Logging/TokenizedMessage.h"
 
 const FName FMessageTokenFactoryRegistration::MD_TokenFactoryFunction(TEXT("TokenFactoryFunction"));
 const FName FMessageTokenFactoryRegistration::MD_TokenFactoryName(TEXT("TokenFactoryName"));
 
-FBlueprintMessageToken::FBlueprintMessageToken(FName InSlot): Name(InSlot)
+FBlueprintMessageToken::FBlueprintMessageToken(const FName& InSlot): Name(InSlot)
 {
 }
 
-FBlueprintMessageToken::FBlueprintMessageToken(TSharedRef<IMessageToken> InToken): Data(InToken)
+FBlueprintMessageToken::FBlueprintMessageToken(TSharedRef<IMessageToken>&& InToken)
+	: Instance(MoveTemp(InToken))
 {
+}
+
+FBlueprintMessageToken::FBlueprintMessageToken(TSharedRef<IMessageToken>&& InToken, TSharedRef<FBlueprintMessageTokenData>&& InCustomData)
+	: Instance(MoveTemp(InToken)), Data(MoveTemp(InCustomData))
+{
+}
+
+void FBlueprintMessageToken::OnMessageTokenActivated(FOnBlueprintMessageTokenActivated&& InDelegate)
+{
+	if (!Instance.IsValid())
+	{
+		return;
+	}
+
+	Instance->OnMessageTokenActivated(FOnMessageTokenActivated::CreateLambda([Token = this, Delegate = MoveTemp(InDelegate)](const TSharedPtr<IMessageToken>& TokenInstance)
+	{
+		if (Token->Instance.IsValid())
+		{
+			ensure(TokenInstance == Token->Instance);
+			Delegate.Execute(*Token);
+		}
+	}));
 }
 
 FMessageTokenFactoryRegistration::FMessageTokenFactoryRegistration(UFunction* Function)
@@ -20,15 +42,18 @@ FMessageTokenFactoryRegistration::FMessageTokenFactoryRegistration(UFunction* Fu
 {
 }
 
-bool FMessageTokenFactoryRegistration::IsTokenFactoryFunction(UFunction& Function)
+bool FMessageTokenFactoryRegistration::IsTokenFactoryFunction(UFunction* Function)
 {
-	if (!Function.HasMetaData(MD_TokenFactoryFunction))
+	if (!IsValid(Function) || !Function->GetOuterUClass())
 		return false;
 
-	if (!Function.HasAllFunctionFlags(FUNC_Static | FUNC_Native | FUNC_BlueprintPure))
+	if (!Function->HasMetaData(MD_TokenFactoryFunction))
 		return false;
 
-	FStructProperty* RetVal = CastField<FStructProperty>(Function.GetReturnProperty());
+	if (!Function->HasAllFunctionFlags(FUNC_Static | FUNC_Native | FUNC_BlueprintPure))
+		return false;
+
+	FStructProperty* RetVal = CastField<FStructProperty>(Function->GetReturnProperty());
 	if (!RetVal || RetVal->Struct != FBlueprintMessageToken::StaticStruct())
 		return false;
 
@@ -40,10 +65,7 @@ void FMessageTokenFactoryRegistration::GetRegisteredFactories(TArray<FMessageTok
 	for (TObjectIterator<UFunction> It; It; ++It)
 	{
 		UFunction* const Function = *It;
-
-		const UClass* FuncOuter = Cast<UClass>(Function->GetOuter());
-
-		if (FuncOuter && FMessageTokenFactoryRegistration::IsTokenFactoryFunction(*Function))
+		if (FMessageTokenFactoryRegistration::IsTokenFactoryFunction(Function))
 		{
 			OutArray.Add(FMessageTokenFactoryRegistration(Function));
 		}

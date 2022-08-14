@@ -65,7 +65,7 @@ UBlueprintMessage* UBlueprintMessage::AddToken(const FBlueprintMessageToken& Tok
 	// Find slot and replace it with new token
 	if (FBlueprintMessageToken* SlotPtr = Tokens.FindByKey(Slot))
 	{
-		SlotPtr->Data = Token.Data;
+		SlotPtr->Instance = Token.Instance;
 	}
 	else
 	{ // Add new token with slot identifier
@@ -155,9 +155,9 @@ TSharedRef<FTokenizedMessage> UBlueprintMessage::BuildMessage() const
 	for (const FBlueprintMessageToken& Token : Tokens)
 	{
 		// dump all messages except empty slots
-		if (Token.Data.IsValid())
+		if (Token.Instance.IsValid())
 		{
-			MessagePtr->AddToken(Token.Data.ToSharedRef());
+			MessagePtr->AddToken(Token.Instance.ToSharedRef());
 		}
 		else
 		{

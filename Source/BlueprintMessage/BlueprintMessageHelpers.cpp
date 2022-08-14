@@ -1,5 +1,6 @@
 ﻿#include "BlueprintMessageHelpers.h"
 #include "BlueprintMessageToken.h"
+#include "BlueprintMessage.h"
 
 #if WITH_EDITOR
 #include "EditorUtilitySubsystem.h"
@@ -7,25 +8,24 @@
 #include "EditorUtilityWidgetBlueprint.h"
 #endif
 
-void FBlueprintMessageHelpers::InvokeDelegate(FBlueprintMessageActionDelegate InDelegate)
+void FBlueprintMessageHelpers::InvokeDynamicDelegate(FBlueprintMessageActionDelegate InDelegate)
 {
-	if (IsValid(InDelegate.GetUObject()))
-	{
-		InDelegate.ExecuteIfBound();
-	}
+	UE_LOG(LogBlueprintMessage, Verbose, TEXT("Invoke external %s"), *InDelegate.ToString<UObject>());
+
+	InDelegate.ExecuteIfBound();
 }
 
 void FBlueprintMessageHelpers::SpawnEditorUtilityWidget(TSoftObjectPtr<UBlueprint> WidgetBP)
 {
+	UE_LOG(LogBlueprintMessage, Verbose, TEXT("Invoke editor utility %s"), *WidgetBP.ToString());
+
 #if WITH_EDITOR
-	if (UObject* WidgetClass = WidgetBP.LoadSynchronous())
+	if (UBlueprint* WidgetClass = WidgetBP.LoadSynchronous())
 	{
 		if (UEditorUtilityWidgetBlueprint* EditorWidget = Cast<UEditorUtilityWidgetBlueprint>(WidgetClass))
 		{
 			GEditor->GetEditorSubsystem<UEditorUtilitySubsystem>()->SpawnAndRegisterTab(EditorWidget);
 		}
 	}
-#else
-	ensureAlwaysMsgf(false, TEXT("Unable to execute action in non-editor build"));
 #endif
 }

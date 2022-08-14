@@ -125,3 +125,5 @@ protected:
 	UPROPERTY(BlueprintReadWrite, meta=(AllowPrivateAccess))
 	bool bSuppressLoggingToOutputLog = false;
 };
+
+DECLARE_LOG_CATEGORY_EXTERN(LogBlueprintMessage, Log, All);

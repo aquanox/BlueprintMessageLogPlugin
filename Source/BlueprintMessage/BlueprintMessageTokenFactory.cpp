@@ -1,26 +1,9 @@
 ﻿// Copyright 2022, Aquanox.
 
 #include "BlueprintMessageTokenFactory.h"
-
+#include "BlueprintMessage.h"
 #include "BlueprintMessageHelpers.h"
 #include "Misc/UObjectToken.h"
-
-
-
-// IMessageToken
-//  FTextToken | implemented
-//  FDynamicTextToken | implemented
-//  FURLToken | implemented
-//  FSeverityToken | implemented
-//  FUObjectToken | implemented
-//  FActorToken | implemented
-//  FAssetNameToken | implemented
-//  FImageToken | implemented
-//  FTutorialToken | implemented
-//  FActionToken | special
-//  FDocumentationToken | implemented
-//  FEdGraphToken | special
-//  FNiagaraCompileEventToken | special
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeTextToken(FText Value)
 {
@@ -39,11 +22,21 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeNameToken(FName Value)
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeUrlToken(FString Value, FText Message)
 {
+	if (Value.IsEmpty())
+	{
+		UE_LOG(LogBlueprintMessage, Warning, TEXT("URLToken was created with empty value"));
+	}
+
 	return FBlueprintMessageToken(FURLToken::Create(Value, Message));
 }
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeObjectToken(UObject* Value, FText Label)
 {
+	if (!IsValid(Value))
+	{
+		UE_LOG(LogBlueprintMessage, Warning, TEXT("ObjectToken was created with empty value"));
+	}
+
 	return FBlueprintMessageToken(FUObjectToken::Create(Value, Label));
 }
 
@@ -81,17 +74,31 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeSoftAssetPathToken(FSo
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeAssetPathToken(FString AssetPath, FText Label)
 {
-	//Label = Label.IsEmpty() ? FText::FromString(FPackageName::GetShortName(AssetPath)) : Label;
+	if (AssetPath.IsEmpty())
+	{
+		UE_LOG(LogBlueprintMessage, Warning, TEXT("AssetPathToken was created with empty value"));
+	}
+
 	return FBlueprintMessageToken(FAssetNameToken::Create(AssetPath, Label));
 }
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeImageToken(FName Value)
 {
+	if (Value.IsNone())
+	{
+		UE_LOG(LogBlueprintMessage, Warning, TEXT("ImageToken was created with empty value"));
+	}
+
 	return FBlueprintMessageToken(FImageToken::Create(Value));
 }
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeActorToken(AActor* Value, FText Message)
 {
+	if (!IsValid(Value))
+	{
+		UE_LOG(LogBlueprintMessage, Warning, TEXT("ActorToken was created with empty value"));
+	}
+
 	FString ActorPath = Value ? Value->GetPathName() : FString();
 	FGuid Guid;
 	Message = Message.IsEmpty() && Value ? FText::FromString(Value->GetActorNameOrLabel()) : Message;
@@ -103,11 +110,21 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeActorToken(AActor* Val
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeTutorialToken(TSoftObjectPtr<UBlueprint> Value)
 {
+	if (Value.IsNull())
+	{
+		UE_LOG(LogBlueprintMessage, Warning, TEXT("TutorialToken was created with empty value"));
+	}
+
 	return FBlueprintMessageToken(FTutorialToken::Create(Value.GetLongPackageName()));
 }
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeDocumentationToken(FString Value)
 {
+	if (Value.IsEmpty())
+	{
+		UE_LOG(LogBlueprintMessage, Warning, TEXT("DocumentationToken was created with empty value"));
+	}
+
 	return FBlueprintMessageToken(FDocumentationToken::Create(Value));
 }
 
@@ -117,6 +134,10 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeDynamicTextToken_Deleg
 	if (Value.IsBound())
 	{
 		Attribute.BindUFunction(Value.GetUObject(), Value.GetFunctionName());
+	}
+	else
+	{
+		UE_LOG(LogBlueprintMessage, Warning, TEXT("DynamicTextToken was created with empty value"));
 	}
 	return FBlueprintMessageToken(FDynamicTextToken::Create(Attribute));
 }
@@ -128,20 +149,34 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeDynamicTextToken_Funct
 	{
 		Attribute.BindUFunction(Object, FunctionName);
 	}
+	else
+	{
+		UE_LOG(LogBlueprintMessage, Warning, TEXT("DynamicTextToken was created with empty value"));
+	}
 	return FBlueprintMessageToken(FDynamicTextToken::Create(Attribute));
 }
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeActionToken(FText Name, FText Description, const FBlueprintMessageActionDelegate& Action, bool bInSingleUse)
 {
+	if (!Action.IsBound())
+	{
+		UE_LOG(LogBlueprintMessage, Warning, TEXT("ActionToken was created with empty value"));
+	}
+
 	return FBlueprintMessageToken(
 		FActionToken::Create(Name, Description,
-			FOnActionTokenExecuted::CreateStatic(FBlueprintMessageHelpers::InvokeDelegate, Action),
+			FOnActionTokenExecuted::CreateStatic(FBlueprintMessageHelpers::InvokeDynamicDelegate, Action),
 			bInSingleUse)
 	);
 }
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeEditorUtilityWidgetToken(TSoftObjectPtr<UBlueprint> Widget, FText ActionName, FText Description, bool bSingleUse)
 {
+	if (Widget.IsNull())
+	{
+		UE_LOG(LogBlueprintMessage, Warning, TEXT("EditorUtilityWidgetToken was created with empty value"));
+	}
+
 	const FString WidgetAssetName = Widget.GetAssetName();
 
 	ActionName = !ActionName.IsEmpty() ? ActionName

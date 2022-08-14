@@ -1,9 +1,8 @@
 ﻿#pragma once
 
 #include "Modules/ModuleManager.h"
-#include "BlueprintMessageToken.h"
 
-class BLUEPRINTMESSAGE_API FBlueprintMessageModule : public FDefaultModuleImpl
+class BLUEPRINTMESSAGE_API FBlueprintMessageModule : public IModuleInterface
 {
 public:
 	virtual void StartupModule() override;
