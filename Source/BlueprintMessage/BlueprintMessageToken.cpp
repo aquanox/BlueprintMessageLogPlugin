@@ -44,6 +44,7 @@ FMessageTokenFactoryRegistration::FMessageTokenFactoryRegistration(UFunction* Fu
 
 bool FMessageTokenFactoryRegistration::IsTokenFactoryFunction(UFunction* Function)
 {
+#if WITH_EDITOR
 	if (!IsValid(Function) || !Function->GetOuterUClass())
 		return false;
 
@@ -58,6 +59,9 @@ bool FMessageTokenFactoryRegistration::IsTokenFactoryFunction(UFunction* Functio
 		return false;
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 void FMessageTokenFactoryRegistration::GetRegisteredFactories(TArray<FMessageTokenFactoryRegistration>& OutArray)
