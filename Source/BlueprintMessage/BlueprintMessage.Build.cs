@@ -6,12 +6,17 @@ public class BlueprintMessage : ModuleRules
 {
 	public BlueprintMessage(ReadOnlyTargetRules Target) : base(Target)
 	{
-
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		// Disable private/public structure
 		PublicIncludePaths.Add(ModuleDirectory);
 		PrivateIncludePaths.Add(ModuleDirectory);
+
+		if (Target.bBuildEditor)
+		{
+			PublicIncludePaths.Add("Developer/MessageLog/Private");
+			PrivateIncludePaths.Add("Developer/MessageLog/Private");
+		}
 
 		if (Target.Configuration == UnrealTargetConfiguration.DebugGame)
 		{
@@ -23,7 +28,8 @@ public class BlueprintMessage : ModuleRules
 		{
 			"Core",
 			"CoreUObject",
-			"Engine"
+			"Engine",
+			"MessageLog"
 		});
 
 		if (Target.bBuildEditor)

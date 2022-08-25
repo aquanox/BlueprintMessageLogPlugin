@@ -2,6 +2,7 @@
 
 #include "BlueprintMessage.h"
 
+#include "BlueprintMessageHelpers.h"
 #include "BlueprintMessageTokenFactory.h"
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -44,6 +45,23 @@ void UBlueprintMessage::MessageLogNotify(FText Message, FName Category, EBluepri
 
 UBlueprintMessage::UBlueprintMessage()
 {
+	//SelectableCategories.Add(TEXT("BlueprintLog"));
+}
+
+TArray<FName> UBlueprintMessage::GetAvailableCategories()
+{
+	const UBlueprintMessage* Message = GetDefault<UBlueprintMessage>();
+
+	TArray<FName> Result;
+	if (!Message->SelectableCategories.Num())
+	{
+		FBlueprintMessageHelpers::GetAvailableCategories(Result);
+	}
+	else
+	{
+		Result = Message->SelectableCategories;
+	}
+	return Result;
 }
 
 UBlueprintMessage* UBlueprintMessage::Duplicate()

@@ -12,7 +12,7 @@
  * such as would be used for compiler output with 'hyperlinks' to source file locations
  *
  */
-UCLASS(BlueprintType)
+UCLASS(BlueprintType, Config=Engine, DefaultConfig)
 class BLUEPRINTMESSAGE_API UBlueprintMessage : public UObject
 {
 	GENERATED_BODY()
@@ -27,7 +27,9 @@ public:
 	 * @returns message instance
 	 */
 	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage", meta=(BlueprintInternalUseOnly=true))
-	static UBlueprintMessage* CreateBlueprintMessage(UPARAM(DisplayName="Category") FName LogCategory = TEXT("BlueprintLog"), EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info);
+	static UBlueprintMessage* CreateBlueprintMessage(
+		UPARAM(DisplayName="Category", meta=(GetOptions="GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
+		EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info);
 
 	/**
 	 * Construct new message instance with initial text
@@ -39,7 +41,11 @@ public:
 	 * @returns message instance
 	 */
 	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage", meta=(AdvancedDisplay=3))
-	static UBlueprintMessage* CreateSimpleBlueprintMessage(UPARAM(DisplayName="Category") FName LogCategory = TEXT("BlueprintLog"), EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info, FText Message = INVTEXT(""), bool bShow = false);
+	static UBlueprintMessage* CreateSimpleBlueprintMessage(
+		UPARAM(DisplayName="Category", meta=(GetOptions="GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
+		EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info,
+		FText Message = INVTEXT(""),
+		bool bShow = false);
 
 	/**
 	 * Opens the log for display to the user given certain conditions.
@@ -49,7 +55,10 @@ public:
 	 * @param bForce Override the filter & log status & force the log to open.
 	 */
 	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage")
-	static void MessageLogOpen(UPARAM(DisplayName="Category") FName LogCategory = TEXT("BlueprintLog"), EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info, bool bForce = false);
+	static void MessageLogOpen(
+		UPARAM(DisplayName="Category", meta=(GetOptions="GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
+		EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info,
+		bool bForce = false);
 
 	/**
 	 * Notify the user with a message if there are messages present.
@@ -60,10 +69,20 @@ public:
 	 * @param bForce Notify anyway, even if the filters gives us no messages.
 	 */
 	UFUNCTION(BlueprintCallable, Category="Utilities|BlueprintMessage")
-	static void MessageLogNotify(FText Message = INVTEXT(""), UPARAM(DisplayName="Category") FName LogCategory = TEXT("BlueprintLog"), EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info, bool bForce = false);
+	static void MessageLogNotify(
+		FText Message = INVTEXT(""),
+		UPARAM(DisplayName="Category", meta=(GetOptions="GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
+		EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info,
+		bool bForce = false);
 
 	/* constructor */
 	UBlueprintMessage();
+
+	/**
+	 * Categories
+	 */
+	UFUNCTION(CallInEditor, meta=(BlueprintInternalUseOnly=true))
+	static TArray<FName> GetAvailableCategories();
 
 	/**
 	 * Duplicate message and return its copy
@@ -124,6 +143,13 @@ protected:
 	/** Should we mirror message log messages from this instance to the output log? */
 	UPROPERTY(BlueprintReadWrite, meta=(AllowPrivateAccess))
 	bool bSuppressLoggingToOutputLog = false;
+
+	friend class FBlueprintMessageModule;
+
+	UPROPERTY(Config)
+	TArray<FName> SelectableCategories;
+	UPROPERTY(Config)
+	TArray<FName> CustomCategories;
 };
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBlueprintMessage, Log, All);

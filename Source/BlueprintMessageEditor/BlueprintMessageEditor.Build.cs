@@ -33,6 +33,8 @@ public class BlueprintMessageEditor : ModuleRules
 			"KismetCompiler",
 			"BlueprintMessage",
 			"BlueprintGraph",
+			"GraphEditor",
+			"PropertyPath",
 			"ToolMenus"
 		});
 	}
