@@ -14,8 +14,8 @@ public class BlueprintMessage : ModuleRules
 
 		if (Target.bBuildEditor)
 		{
-			PublicIncludePaths.Add("Developer/MessageLog/Private");
-			PrivateIncludePaths.Add("Developer/MessageLog/Private");
+			var EngineDir = System.IO.Path.GetFullPath(Target.RelativeEnginePath);
+			PrivateIncludePaths.Add(EngineDir + "/Source/Developer/MessageLog/Private");
 		}
 
 		if (Target.Configuration == UnrealTargetConfiguration.DebugGame)
