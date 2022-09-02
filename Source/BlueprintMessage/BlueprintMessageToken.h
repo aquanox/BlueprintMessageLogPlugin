@@ -62,14 +62,13 @@ public:
 UENUM()
 enum class EBlueprintMessageSeverity : uint8
 {
-	CriticalError = 0,
+	CriticalError = 0 UMETA(Hidden),
 	Error = 1,
 	PerformanceWarning = 2,
 	Warning = 3,
 	Info = 4,
 };
 
-static_assert((int32)EBlueprintMessageSeverity::CriticalError == EMessageSeverity::CriticalError);
 static_assert((int32)EBlueprintMessageSeverity::Error == EMessageSeverity::Error);
 static_assert((int32)EBlueprintMessageSeverity::PerformanceWarning == EMessageSeverity::PerformanceWarning);
 static_assert((int32)EBlueprintMessageSeverity::Warning == EMessageSeverity::Warning);

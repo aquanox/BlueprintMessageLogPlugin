@@ -446,7 +446,7 @@ void UK2Node_AddBlueprintMessageTextToken::ExpandNode(class FKismetCompilerConte
 			}
 			else if (ArgumentPinCategory == UEdGraphSchema_K2::PC_Byte || ArgumentPinCategory == UEdGraphSchema_K2::PC_Enum)
 			{
-				static UEnum* TextGenderEnum = FindObjectChecked<UEnum>(ANY_PACKAGE, TEXT("ETextGender"), /*ExactClass*/true);
+				static UEnum* TextGenderEnum = FindObjectChecked<UEnum>(nullptr, TEXT("/Script/Engine.ETextGender"), /*ExactClass*/true);
 				if (ArgumentPin->PinType.PinSubCategoryObject == TextGenderEnum)
 				{
 					Schema->TrySetDefaultValue(*ArgumentTypePin, TEXT("Gender"));
@@ -600,7 +600,7 @@ bool UK2Node_AddBlueprintMessageTextToken::IsConnectionDisallowed(const UEdGraph
 		}
 		else if (OtherPinCategory == UEdGraphSchema_K2::PC_Byte || OtherPinCategory == UEdGraphSchema_K2::PC_Enum)
 		{
-			static UEnum* TextGenderEnum = FindObjectChecked<UEnum>(ANY_PACKAGE, TEXT("ETextGender"), /*ExactClass*/true);
+			static UEnum* TextGenderEnum = FindObjectChecked<UEnum>(nullptr, TEXT("/Script/Engine.ETextGender"), /*ExactClass*/true);
 			if (OtherPin->PinType.PinSubCategoryObject == TextGenderEnum)
 			{
 				bIsValidType = true;
