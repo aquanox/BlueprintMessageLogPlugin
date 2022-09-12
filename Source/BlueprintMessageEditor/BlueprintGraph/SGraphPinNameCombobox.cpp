@@ -1,8 +1,7 @@
 ﻿// Copyright 2022, Aquanox.
-#include "SGraphPinNameCombobox.h"
+#include "BlueprintGraph/SGraphPinNameCombobox.h"
 
 #include "SGraphPinComboBox.h"
-
 
 void SGraphPinNameCombobox::Construct(const FArguments& InArgs, UEdGraphPin* InGraphPinObj, const TArray<TSharedPtr<FName>>& InNameList)
 {
@@ -10,20 +9,20 @@ void SGraphPinNameCombobox::Construct(const FArguments& InArgs, UEdGraphPin* InG
 	SGraphPin::Construct(SGraphPin::FArguments(), InGraphPinObj);
 }
 
-TSharedRef<SWidget>	SGraphPinNameCombobox::GetDefaultValueWidget()
+TSharedRef<SWidget> SGraphPinNameCombobox::GetDefaultValueWidget()
 {
 	TArray<TSharedPtr<int32>> Indexes;
 	GenerateComboBoxIndexes(Indexes);
 
 	//Create widget
 	return SAssignNew(ComboBox, SPinComboBox)
-		.ComboItemList( Indexes )
+		.ComboItemList(Indexes)
 		.VisibleText(this, &SGraphPinNameCombobox::OnGetText)
 		.OnGetDisplayName(this, &SGraphPinNameCombobox::OnGetFriendlyName)
 		.OnGetTooltip(this, &SGraphPinNameCombobox::OnGetFriendlyName)
-		.OnSelectionChanged( this, &SGraphPinNameCombobox::ComboBoxSelectionChanged )
+		.OnSelectionChanged(this, &SGraphPinNameCombobox::ComboBoxSelectionChanged)
 		.IsEnabled(this, &SGraphPinNameCombobox::GetDefaultValueIsEditable)
-		.Visibility( this, &SGraphPinNameCombobox::GetDefaultValueVisibility);
+		.Visibility(this, &SGraphPinNameCombobox::GetDefaultValueVisibility);
 }
 
 void SGraphPinNameCombobox::GenerateComboBoxIndexes(TArray<TSharedPtr<int32>>& OutComboBoxIndexes)
@@ -34,15 +33,15 @@ void SGraphPinNameCombobox::GenerateComboBoxIndexes(TArray<TSharedPtr<int32>>& O
 	}
 }
 
-void SGraphPinNameCombobox::ComboBoxSelectionChanged( TSharedPtr<int32> NewSelection, ESelectInfo::Type /*SelectInfo*/ )
+void SGraphPinNameCombobox::ComboBoxSelectionChanged(TSharedPtr<int32> NewSelection, ESelectInfo::Type /*SelectInfo*/)
 {
 	FName Name = NewSelection.IsValid() ? *NameList[*NewSelection] : NAME_None;
 	if (auto Schema = (GraphPinObj ? GraphPinObj->GetSchema() : NULL))
 	{
 		FString NameAsString = Name.ToString();
-		if(GraphPinObj->GetDefaultAsString() != NameAsString)
+		if (GraphPinObj->GetDefaultAsString() != NameAsString)
 		{
-			const FScopedTransaction Transaction( NSLOCTEXT("GraphEditor", "ChangeNameListPinValue", "Change Name List Pin Value" ) );
+			const FScopedTransaction Transaction(NSLOCTEXT("GraphEditor", "ChangeNameComboboxPinValue", "Change Name Combobox Pin Value"));
 			GraphPinObj->Modify();
 
 			Schema->TrySetDefaultValue(*GraphPinObj, NameAsString);

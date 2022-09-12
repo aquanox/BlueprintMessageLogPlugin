@@ -25,7 +25,7 @@ private:
 	FString OnGetText() const;
 	FText OnGetFriendlyName(int32 EnumIndex) const;
 
-	void GenerateComboBoxIndexes( TArray< TSharedPtr<int32> >& OutComboBoxIndexes );
+	void GenerateComboBoxIndexes(TArray<TSharedPtr<int32>>& OutComboBoxIndexes);
 
 	/**
 	 *	Function to set the newly selected index
@@ -33,9 +33,9 @@ private:
 	 * @param NewSelection The newly selected item in the combo box
 	 * @param SelectInfo Provides context on how the selection changed
 	 */
-	void ComboBoxSelectionChanged( TSharedPtr<int32> NewSelection, ESelectInfo::Type SelectInfo );
+	void ComboBoxSelectionChanged(TSharedPtr<int32> NewSelection, ESelectInfo::Type SelectInfo);
 
-	TSharedPtr<class SPinComboBox>	ComboBox;
+	TSharedPtr<class SPinComboBox> ComboBox;
 
 	/** The actual list of FName values to choose from */
 	TArray<TSharedPtr<FName>> NameList;

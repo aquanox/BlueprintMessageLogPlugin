@@ -1,7 +1,7 @@
 ﻿// Copyright 2022, Aquanox.
 
 #include "Modules/ModuleManager.h"
-#include "BlueprintMessageCustomPinFactory.h"
+#include "BlueprintGraph/BlueprintMessageCustomPinFactory.h"
 
 struct FBlueprintMessageEditorModule : public FDefaultModuleImpl
 {
