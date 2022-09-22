@@ -1,23 +1,28 @@
 ﻿// Copyright 2022, Aquanox.
-#include "BlueprintGraph/BlueprintMessageCustomPinFactory.h"
+#include "BlueprintGraph/BlueprintMessageGraphPanelPinFactory.h"
 
+#include "BlueprintGraph/SmartGraphPanelPinFactory.h"
+#include "BlueprintGraph/SmartGraphPanelPinFactoryMatchers.h"
 #include "K2Node_CallFunction.h"
 #include "PropertyPathHelpers.h"
 #include "Kismet2/BlueprintEditorUtils.h"
 #include "SGraphPinNameList.h"
-#include "SGraphPinNameCombobox.h"
+#include "Slate/SGraphPinNameCombobox.h"
 
-FBlueprintMessageCustomPinFactory::FBlueprintMessageCustomPinFactory()
+TSharedPtr<FGraphPanelPinFactory> UBlueprintMessageGraphPanelPinFactory::CreateFactory() const
 {
-	CreateHandler(TEXT("GetOptionsHandler"))
+	auto Factory = MakeShared<FSmartGraphPanelPinFactory>();
+	Factory->CreateHandler(TEXT("GetOptionsFromMeta"))
 		.AddMatcher<FPinFactoryMatcher_Schema>(UEdGraphSchema_K2::StaticClass())
 		.AddMatcher<FPinFactoryMatcher_PinCategory>(UEdGraphSchema_K2::PC_Name)
 		.AddMatcher<FPinFactoryMatcher_Node>(UK2Node_CallFunction::StaticClass())
-		.AddMatcher<FPinFactoryMatcher_PinMetadata>(TEXT("GetOptions"))
-		.Handle(FHandlerDelegate::CreateRaw(this, &FBlueprintMessageCustomPinFactory::CreateGetOptionsPin));
+		.AddMatcher<FPinFactoryMatcher_PinHasMetadata>(TEXT("GetOptions"))
+		.Handle(FGraphPinHandlerDelegate::CreateUObject(this, &ThisClass::CreateGetOptionsPin));
+
+	return Factory;
 }
 
-TSharedPtr<SGraphPin> FBlueprintMessageCustomPinFactory::CreateGetOptionsPin(UEdGraphPin* InPin) const
+TSharedPtr<SGraphPin> UBlueprintMessageGraphPanelPinFactory::CreateGetOptionsPin(UEdGraphPin* InPin) const
 {
 	static const FName MD_GetOptions(TEXT("GetOptions"));
 
@@ -26,43 +31,35 @@ TSharedPtr<SGraphPin> FBlueprintMessageCustomPinFactory::CreateGetOptionsPin(UEd
 	UObject* const Outer = Cast<UK2Node_CallFunction>(InPin->GetOuter());
 	ensure(Outer);
 
-	TArray<UObject*> GetOptionTargetObjects;
+	FString FunctionName;
+	TArray<UObject*> TargetObjects;
 
-	FString GetOptionsFunctionName;
-	if (Outer->IsA(UK2Node_CallFunction::StaticClass()))
+	if (UK2Node_CallFunction* CallFunctionNode = Cast<UK2Node_CallFunction>(Outer))
 	{
-		if (UK2Node_CallFunction* CallFunctionNode = CastChecked<UK2Node_CallFunction>(Outer))
+		UFunction* CallTargetFunction = CallFunctionNode->GetTargetFunction();
+		FString PinMetaData = CallFunctionNode->GetPinMetaData(InPin->GetFName(), MD_GetOptions);
+		if (!PinMetaData.IsEmpty() && CallTargetFunction)
 		{
-			FString PinMetaData = CallFunctionNode->GetPinMetaData(InPin->GetFName(), MD_GetOptions);
-			if (!PinMetaData.IsEmpty() && CallFunctionNode->GetTargetFunction())
-			{
-				GetOptionsFunctionName = PinMetaData;
-
-				// register target CDO as default outer
-				UClass* OuterUClass = CallFunctionNode->GetTargetFunction()->GetOuterUClass();
-				GetOptionTargetObjects.Add(OuterUClass->GetDefaultObject());
-				// register current blueprint as secondary outer?
-			}
+			FunctionName = PinMetaData;
+			TargetObjects.Add(CallTargetFunction->GetOuterUClass()->GetDefaultObject());
 		}
 	}
 
-	TArray<TSharedPtr<FName>> GetOptionsOptions;
-	if (!GetOptionsFunctionName.IsEmpty())
+	TArray<TSharedPtr<FName>> Options;
+	if (!BuildSelectableOptions(TargetObjects, FunctionName, Options))
 	{
-		GetOptionsToSelect(GetOptionTargetObjects, GetOptionsFunctionName, GetOptionsOptions);
+		return nullptr;
 	}
 
-	if (GetOptionsOptions.Num())
-	{
-		return SNew(SGraphPinNameCombobox, InPin, GetOptionsOptions);
-	}
-
-	return nullptr;
+	return SNew(SGraphPinNameCombobox, InPin, Options);
 }
 
-void FBlueprintMessageCustomPinFactory::GetOptionsToSelect(TArray<UObject*>& SourceObjects, FString SourceFunctionName, TArray<TSharedPtr<FName>>& OutOptions) const
+bool UBlueprintMessageGraphPanelPinFactory::BuildSelectableOptions(TArray<UObject*>& SourceObjects, FString SourceFunctionName, TArray<TSharedPtr<FName>>& OutOptions) const
 {
-	check(!SourceFunctionName.IsEmpty());
+	if (SourceFunctionName.IsEmpty())
+	{
+		return false;
+	}
 
 	// Check for external function references
 	if (SourceFunctionName.Contains(TEXT(".")))
@@ -95,7 +92,10 @@ void FBlueprintMessageCustomPinFactory::GetOptionsToSelect(TArray<UObject*>& Sou
 					TArray<FName> NameOptions;
 					if (PropertyPathHelpers::GetPropertyValue(Target, Path, NameOptions))
 					{
-						Algo::Transform(NameOptions, StringOptions, [](const FName& InName) { return InName.ToString(); });
+						Algo::Transform(NameOptions, StringOptions, [](const FName& InName)
+						{
+							return InName.ToString();
+						});
 					}
 				}
 			}
@@ -110,7 +110,10 @@ void FBlueprintMessageCustomPinFactory::GetOptionsToSelect(TArray<UObject*>& Sou
 			{
 				TSet<FString> StringOptionsSet(StringOptions);
 				OptionIntersectionSet = StringOptionsSet.Intersect(OptionIntersectionSet);
-				OptionIntersection.RemoveAll([&OptionIntersectionSet](const FString& Option) { return !OptionIntersectionSet.Contains(Option); });
+				OptionIntersection.RemoveAll([&OptionIntersectionSet](const FString& Option)
+				{
+					return !OptionIntersectionSet.Contains(Option);
+				});
 			}
 
 			// If we're out of possible intersected options, we can stop.
@@ -120,6 +123,11 @@ void FBlueprintMessageCustomPinFactory::GetOptionsToSelect(TArray<UObject*>& Sou
 			}
 		}
 
-		Algo::Transform(OptionIntersection, OutOptions, [](const FString& InString) { return MakeShared<FName>(*InString); });
+		Algo::Transform(OptionIntersection, OutOptions, [](const FString& InString)
+		{
+			return MakeShared<FName>(*InString);
+		});
 	}
+
+	return OutOptions.Num() > 0;
 }

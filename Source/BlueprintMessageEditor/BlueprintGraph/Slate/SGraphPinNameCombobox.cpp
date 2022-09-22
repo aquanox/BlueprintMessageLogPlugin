@@ -1,5 +1,5 @@
 ﻿// Copyright 2022, Aquanox.
-#include "BlueprintGraph/SGraphPinNameCombobox.h"
+#include "BlueprintGraph/Slate/SGraphPinNameCombobox.h"
 
 #include "SGraphPinComboBox.h"
 
