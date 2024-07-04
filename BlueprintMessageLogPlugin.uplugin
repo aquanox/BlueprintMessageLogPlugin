@@ -20,13 +20,13 @@
 		{
 			"Name": "BlueprintMessage",
 			"Type": "Runtime",
-			"LoadingPhase": "Default",
+			"LoadingPhase": "PreDefault",
 			"WhitelistPlatforms": [ "Win64", "Mac", "Linux" ]
 		},
 		{
 			"Name": "BlueprintMessageEditor",
 			"Type": "UncookedOnly",
-			"LoadingPhase": "Default",
+			"LoadingPhase": "PreDefault",
 			"WhitelistPlatforms": [ "Win64", "Mac", "Linux" ]
 		}
 	]
