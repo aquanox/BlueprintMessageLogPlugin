@@ -28,16 +28,17 @@ public class BlueprintMessageEditor : ModuleRules
 			"Core",
 			"CoreUObject",
 			"Engine",
-			"Slate",
-			"SlateCore"
+			"BlueprintMessage",
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
+			"MessageLog",
+			"Slate",
+			"SlateCore",
 			"UnrealEd",
 			"Kismet",
 			"KismetCompiler",
-			"BlueprintMessage",
 			"BlueprintGraph",
 			"GraphEditor",
 			"PropertyPath",

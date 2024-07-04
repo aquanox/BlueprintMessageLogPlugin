@@ -28,7 +28,7 @@ Note: plugin is at experimental stage, things may change a lot.
 
 ## Unreal Engine Versions
 
-Tested with 5.0, ue5-main and can be modified to work with other engine versions.
+Plugin is compatible with 5.0-5.4, ue5-main and can be modified to work with other engine versions.
 
 ## Examples
 

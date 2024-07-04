@@ -5,7 +5,13 @@
 #include "CoreMinimal.h"
 #include "BlueprintMessageToken.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "GameFramework/Actor.h"
 #include "BlueprintMessageTokenFactory.generated.h"
+
+DECLARE_DYNAMIC_DELEGATE_RetVal(FText, FGetMessageDynamicText);
+DECLARE_DYNAMIC_DELEGATE_RetVal(FString, FGetMessageDynamicString);
+
+DECLARE_DYNAMIC_DELEGATE(FBlueprintMessageActionDelegate);
 
 /**
  * Message token factory
@@ -20,7 +26,7 @@ public:
 	 * @param Value Token text
 	 * @return Token instance
 	 */
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
+	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeTextToken(FText Value);
 
 	/**
@@ -28,7 +34,7 @@ public:
 	 * @param Value Token text
 	 * @return Token instance
 	 */
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
+	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeStringToken(FString Value);
 
 	/**
@@ -36,7 +42,7 @@ public:
 	 * @param Value Token text
 	 * @return Token instance
 	 */
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
+	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeNameToken(FName Value);
 
 	/**
@@ -45,7 +51,7 @@ public:
 	 * @param Label Hyperlink label text
 	 * @return Token instance
 	 */
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
+	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeUrlToken(FString Value, FText Label = INVTEXT("Link"));
 
 	/**
@@ -59,7 +65,7 @@ public:
 	 * @see FUnrealEdMisc::OnMessageTokenActivated
 	 * @see FUnrealEdMisc::OnGetDisplayName
 	 */
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
+	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeObjectToken(UObject* Value, FText Label = INVTEXT(""));
 
 	/**
@@ -70,7 +76,7 @@ public:
 	 *
 	 * @note This creates hard references. Use with caution, or when need to get asset from object instance
 	 */
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
+	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeAssetToken(UObject* Value, FText Label = INVTEXT(""));
 
 	/**
@@ -79,7 +85,7 @@ public:
 	 * @param Label Asset Label (Asset name is used if empty)
 	 * @return Token instance
 	 */
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
+	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeSoftAssetToken(TSoftObjectPtr<UObject> Value, FText Label = INVTEXT(""));
 
 	/**
@@ -88,7 +94,7 @@ public:
 	 * @param Label Asset Label (Asset name is used if empty)
 	 * @return Token instance
 	 */
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
+	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeSoftClassToken(TSoftClassPtr<UObject> Value, FText Label = INVTEXT(""));
 
 	/**
@@ -97,7 +103,7 @@ public:
 	 * @param Label Asset Label (Asset name is used if empty)
 	 * @return Token instance
 	 */
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
+	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeSoftAssetPathToken(FSoftObjectPath Value, FText Label = INVTEXT(""));
 
 	/**
@@ -106,7 +112,7 @@ public:
 	 * @param Label Asset Label (Asset name is used if empty)
 	 * @return Token instance
 	 */
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
+	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeSoftClassPathToken(FSoftClassPath Value, FText Label = INVTEXT(""));
 
 	/**
@@ -117,7 +123,7 @@ public:
 	 *
 	 * @see FUnrealEdMisc::OnGotoAsset
 	 */
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
+	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeAssetPathToken(FString Value, FText Label = INVTEXT(""));
 
 	/**
@@ -128,7 +134,7 @@ public:
 	 * @see FAppStyle::Get()
 	 * @see ISlateStyle::GetBrush()
 	 */
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
+	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeImageToken(FName Value);
 
 	/**
@@ -140,7 +146,7 @@ public:
 	 *
 	 * @see FUnrealEdMisc::OnActorTokenActivated
 	 */
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
+	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeActorToken(AActor* Value, FText Message = INVTEXT(""));
 
 	/**
@@ -157,7 +163,7 @@ public:
 	 *
 	 * @see SMessageLogMessageListRow::HandleTutorialHyperlinkNavigate
 	 */
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
+	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeTutorialToken(UPARAM(meta=(MetaClass="EditorTutorial")) TSoftObjectPtr<UBlueprint> Value);
 
 	/**
@@ -167,13 +173,20 @@ public:
 	 *
 	 * SMessageLogMessageListRow::HandleDocsHyperlinkNavigate
 	 */
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
+	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeDocumentationToken(FString Value);
 
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
+	/**
+	 * Create token with a dynamic text
+	 * @param Value text source callback
+	 */
+	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeDynamicTextToken_Delegate(FGetMessageDynamicText Value);
 
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
+	/**
+	 * Create token with a dynamic text
+	 */
+	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeDynamicTextToken_Function(UObject* Object, FName FunctionName);
 
 	/**
@@ -185,7 +198,7 @@ public:
 	 * @param bInSingleUse Should hide button after clicking once?
 	 * @return Token instance
 	 */
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
+	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeActionToken(FText Name, FText Description, UPARAM(DisplayName="Event") const FBlueprintMessageActionDelegate& Action, bool bInSingleUse = false);
 
 	/**
@@ -198,7 +211,7 @@ public:
 	 *
 	 * @note I wish SAssetPicker had MetaClass for Blueprints
 	 */
-	UFUNCTION(BlueprintPure, Category="Utilities|BlueprintMessage", meta=(BlueprintThreadSafe, TokenFactoryFunction))
+	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
 	static FBlueprintMessageToken MakeEditorUtilityWidgetToken(UPARAM(meta=(AllowedClasses="EditorUtilityWidgetBlueprint")) TSoftObjectPtr<UBlueprint> Widget, FText ActionName = INVTEXT(""), FText Description = INVTEXT(""), bool bSingleUse = false);
 
 };

@@ -2,8 +2,41 @@
 
 #include "BlueprintMessageTokenFactory.h"
 #include "BlueprintMessage.h"
-#include "BlueprintMessageHelpers.h"
+#include "BlueprintMessageSettings.h"
 #include "Misc/UObjectToken.h"
+#include "Misc/App.h"
+
+#if WITH_EDITOR
+#include "EditorUtilitySubsystem.h"
+#include "EditorUtilityWidget.h"
+#include "EditorUtilityWidgetBlueprint.h"
+#endif
+
+struct InternalHelper
+{
+	static void InvokeDynamicDelegate(FBlueprintMessageActionDelegate InDelegate)
+	{
+		UE_LOG(LogBlueprintMessage, Verbose, TEXT("Invoke external %s"), *InDelegate.ToString<UObject>());
+
+		InDelegate.ExecuteIfBound();
+	}
+
+	static void SpawnEditorUtilityWidget(TSoftObjectPtr<UBlueprint> WidgetBP)
+	{
+		UE_LOG(LogBlueprintMessage, Verbose, TEXT("Invoke editor utility %s"), *WidgetBP.ToString());
+
+#if WITH_EDITOR
+		if (UBlueprint* WidgetClass = WidgetBP.LoadSynchronous())
+		{
+			if (UEditorUtilityWidgetBlueprint* EditorWidget = Cast<UEditorUtilityWidgetBlueprint>(WidgetClass))
+			{
+				GEditor->GetEditorSubsystem<UEditorUtilitySubsystem>()->SpawnAndRegisterTab(EditorWidget);
+			}
+		}
+#endif
+	}
+
+};
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeTextToken(FText Value)
 {
@@ -94,7 +127,7 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeImageToken(FName Value
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeActorToken(AActor* Value, FText Message)
 {
-	if (!IsValid(Value))
+	if (!::IsValid(Value))
 	{
 		UE_LOG(LogBlueprintMessage, Warning, TEXT("ActorToken was created with empty value"));
 	}
@@ -130,16 +163,7 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeDocumentationToken(FSt
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeDynamicTextToken_Delegate(FGetMessageDynamicText Value)
 {
-	TAttribute<FText> Attribute;
-	if (Value.IsBound())
-	{
-		Attribute.BindUFunction(Value.GetUObject(), Value.GetFunctionName());
-	}
-	else
-	{
-		UE_LOG(LogBlueprintMessage, Warning, TEXT("DynamicTextToken was created with empty value"));
-	}
-	return FBlueprintMessageToken(FDynamicTextToken::Create(Attribute));
+	return MakeDynamicTextToken_Function(Value.GetUObject(), Value.GetFunctionName());
 }
 
 FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeDynamicTextToken_Function(UObject* Object, FName FunctionName)
@@ -165,7 +189,7 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeActionToken(FText Name
 
 	return FBlueprintMessageToken(
 		FActionToken::Create(Name, Description,
-			FOnActionTokenExecuted::CreateStatic(FBlueprintMessageHelpers::InvokeDynamicDelegate, Action),
+			FOnActionTokenExecuted::CreateStatic(&InternalHelper::InvokeDynamicDelegate, Action),
 			bInSingleUse)
 	);
 }
@@ -184,7 +208,7 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeEditorUtilityWidgetTok
 
 	return FBlueprintMessageToken(
 		FActionToken::Create(ActionName, Description,
-			FOnActionTokenExecuted::CreateStatic(FBlueprintMessageHelpers::SpawnEditorUtilityWidget, Widget),
+			FOnActionTokenExecuted::CreateStatic(&InternalHelper::SpawnEditorUtilityWidget, Widget),
 			bSingleUse)
 	);
 }

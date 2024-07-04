@@ -26,10 +26,10 @@ public:
 
 	UFunction* GetFactoryFunction() const;
 
-	virtual FText GetMenuCategory() const override;
 	FText GetTokenTitle() const;
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
 	virtual FText GetTooltipText() const override;
+	virtual FText GetMenuCategory() const override;
 	virtual void GetMenuActions(FBlueprintActionDatabaseRegistrar& ActionRegistrar) const override;
 	virtual void AddSearchMetaDataInfo(TArray<struct FSearchTagDataPair>& OutTaggedMetaData) const override;
 	virtual FText GetFunctionContextString() const override;

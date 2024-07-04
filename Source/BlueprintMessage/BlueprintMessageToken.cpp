@@ -1,6 +1,11 @@
 ﻿// Copyright 2022, Aquanox.
 
 #include "BlueprintMessageToken.h"
+#include "UObject/Package.h"
+#include "UObject/UObjectIterator.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Misc/EngineVersionComparison.h"
+#include "Logging/MessageLog.h"
 #include "Logging/TokenizedMessage.h"
 
 const FName FMessageTokenFactoryRegistration::MD_TokenFactoryFunction(TEXT("TokenFactoryFunction"));
@@ -38,20 +43,25 @@ void FBlueprintMessageToken::OnMessageTokenActivated(FOnBlueprintMessageTokenAct
 }
 
 FMessageTokenFactoryRegistration::FMessageTokenFactoryRegistration(UFunction* Function)
-	: FactoryClass(Function->GetOuterUClass()), FunctionName(Function->GetFName())
+	: FactoryFunction(Function), FactoryClass(Function->GetOuterUClass()), FunctionName(Function->GetFName())
 {
+}
+
+bool FMessageTokenFactoryRegistration::IsValid() const
+{
+	return FactoryFunction.IsValid() && FactoryClass.IsValid() && !FunctionName.IsNone();
 }
 
 bool FMessageTokenFactoryRegistration::IsTokenFactoryFunction(UFunction* Function)
 {
 #if WITH_EDITOR
-	if (!IsValid(Function) || !Function->GetOuterUClass())
+	if (!::IsValid(Function))
 		return false;
 
 	if (!Function->HasMetaData(MD_TokenFactoryFunction))
 		return false;
 
-	if (!Function->HasAllFunctionFlags(FUNC_Static | FUNC_Native | FUNC_BlueprintPure))
+	if (!Function->HasAllFunctionFlags(FUNC_Static | FUNC_Native))
 		return false;
 
 	FStructProperty* RetVal = CastField<FStructProperty>(Function->GetReturnProperty());

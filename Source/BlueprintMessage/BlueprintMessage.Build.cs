@@ -5,6 +5,7 @@ using UnrealBuildTool;
 public class BlueprintMessage : ModuleRules
 {
 	private bool bStrictIncludesCheck = false;
+	private bool bUseDirtyHacks = false;
 
 	public BlueprintMessage(ReadOnlyTargetRules Target) : base(Target)
 	{
@@ -13,10 +14,17 @@ public class BlueprintMessage : ModuleRules
 		// Disable private/public structure
 		PublicIncludePaths.Add(ModuleDirectory);
 
-		if (Target.bBuildEditor)
+		if (Target.bBuildDeveloperTools)
 		{
-			var EngineDir = System.IO.Path.GetFullPath(Target.RelativeEnginePath);
-			PrivateIncludePaths.Add(EngineDir + "/Source/Developer/MessageLog/Private");
+			PublicDependencyModuleNames.Add("MessageLog");
+
+			// Requires for category discovery from viewmodel
+			if (bUseDirtyHacks)
+			{
+				var EngineDir = System.IO.Path.GetFullPath(Target.RelativeEnginePath);
+				PrivateIncludePaths.Add(EngineDir + "/Source/Developer/MessageLog/Private");
+				PrivateDefinitions.Add("WITH_MESSAGELOG_HACKS=1");
+			}
 		}
 
 		// This is to emulate engine installation and verify includes during development
@@ -34,7 +42,7 @@ public class BlueprintMessage : ModuleRules
 			"Core",
 			"CoreUObject",
 			"Engine",
-			"MessageLog"
+			"DeveloperSettings"
 		});
 
 		if (Target.bBuildEditor)

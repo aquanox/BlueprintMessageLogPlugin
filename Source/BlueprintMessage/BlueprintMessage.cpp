@@ -2,9 +2,11 @@
 
 #include "BlueprintMessage.h"
 
-#include "BlueprintMessageHelpers.h"
+#include "BlueprintMessageSettings.h"
 #include "BlueprintMessageTokenFactory.h"
+#include "UObject/Package.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Logging/MessageLog.h"
 
 UBlueprintMessage* UBlueprintMessage::CreateBlueprintMessage(FName Category, EBlueprintMessageSeverity Severity)
 {
@@ -26,7 +28,7 @@ UBlueprintMessage* UBlueprintMessage::CreateSimpleBlueprintMessage(FName LogCate
 
 void UBlueprintMessage::MessageLogOpen(FName Category, EBlueprintMessageSeverity Severity, bool bForce)
 {
-	const FName ActualCategory = Category.IsNone() ? TEXT("BlueprintLog") : Category;
+	const FName ActualCategory = Category.IsNone() ? UBlueprintMessageSettings::DefaultCategory : Category;
 	FMessageLog(ActualCategory).Open(
 		static_cast<EMessageSeverity::Type>(Severity),
 		bForce
@@ -35,7 +37,7 @@ void UBlueprintMessage::MessageLogOpen(FName Category, EBlueprintMessageSeverity
 
 void UBlueprintMessage::MessageLogNotify(FText Message, FName Category, EBlueprintMessageSeverity Severity, bool bForce)
 {
-	const FName ActualCategory = Category.IsNone() ? TEXT("BlueprintLog") : Category;
+	const FName ActualCategory = Category.IsNone() ? UBlueprintMessageSettings::DefaultCategory : Category;
 	FMessageLog(ActualCategory).Notify(
 		Message,
 		static_cast<EMessageSeverity::Type>(Severity),
@@ -45,22 +47,12 @@ void UBlueprintMessage::MessageLogNotify(FText Message, FName Category, EBluepri
 
 UBlueprintMessage::UBlueprintMessage()
 {
-	//SelectableCategories.Add(TEXT("BlueprintLog"));
 }
 
 TArray<FName> UBlueprintMessage::GetAvailableCategories()
 {
-	const UBlueprintMessage* Message = GetDefault<UBlueprintMessage>();
-
 	TArray<FName> Result;
-	if (!Message->SelectableCategories.Num())
-	{
-		FBlueprintMessageHelpers::GetAvailableCategories(Result);
-	}
-	else
-	{
-		Result = Message->SelectableCategories;
-	}
+	UBlueprintMessageSettings::Get()->GetAvailableCategories(Result);
 	return Result;
 }
 
@@ -73,6 +65,12 @@ UBlueprintMessage* UBlueprintMessage::Duplicate()
 
 UBlueprintMessage* UBlueprintMessage::AddToken(const FBlueprintMessageToken& Token, FName Slot)
 {
+	// Token with nothing in it
+	if (Token.Name.IsNone() && !Token.Instance.IsValid())
+	{
+		return this;
+	}
+
 	// Simply add a new token
 	if (Slot.IsNone())
 	{
@@ -159,10 +157,14 @@ void UBlueprintMessage::ShowAndPrint(bool bPrintToScreen, bool bPrintToLog, FLin
 
 void UBlueprintMessage::ShowImpl(const FName& InCategory, const TSharedRef<FTokenizedMessage>& InMessage) const
 {
-	FMessageLog Log(InCategory);
-	Log.SuppressLoggingToOutputLog(bSuppressLoggingToOutputLog);
-	Log.AddMessage(InMessage);
-	// ~FMessageLog() -> Flush()
+#if WITH_EDITOR
+	{
+		FMessageLog Log(InCategory);
+		Log.SuppressLoggingToOutputLog(bSuppressLoggingToOutputLog);
+		Log.AddMessage(InMessage);
+		// ~FMessageLog() -> Flush()
+	}
+#endif
 }
 
 

@@ -3,12 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "UObject/Class.h"
 #include "Logging/TokenizedMessage.h"
 #include "BlueprintMessageToken.generated.h"
 
-DECLARE_DYNAMIC_DELEGATE_RetVal(FText, FGetMessageDynamicText);
-DECLARE_DYNAMIC_DELEGATE_RetVal(FText, FGetMessageDynamicString);
-DECLARE_DYNAMIC_DELEGATE(FBlueprintMessageActionDelegate);
+class IMessageToken;
 
 /** Delegate used when clicking a message token */
 DECLARE_DELEGATE_OneParam(FOnBlueprintMessageTokenActivated, const struct FBlueprintMessageToken&);
@@ -25,7 +24,7 @@ public:
 /**
  * Wrapper-container for generic message token to pass around in blueprint
  */
-USTRUCT(BlueprintType, meta=(HiddenByDefault, DisableSplitPin))
+USTRUCT(BlueprintType, Category="Utilities|MessageLog", meta=(HiddenByDefault, DisableSplitPin))
 struct BLUEPRINTMESSAGE_API FBlueprintMessageToken
 {
 	GENERATED_BODY()
@@ -56,6 +55,15 @@ public:
 	TSharedPtr<FBlueprintMessageTokenData> Data;
 };
 
+template<>
+struct TStructOpsTypeTraits<FBlueprintMessageToken> : public TStructOpsTypeTraitsBase2<FBlueprintMessageToken>
+{
+	enum
+	{
+		WithIdentical = false,
+	};
+};
+
 /**
  * Log message severity types
  */
@@ -69,10 +77,10 @@ enum class EBlueprintMessageSeverity : uint8
 	Info = 4,
 };
 
-static_assert((int32)EBlueprintMessageSeverity::Error == EMessageSeverity::Error);
-static_assert((int32)EBlueprintMessageSeverity::PerformanceWarning == EMessageSeverity::PerformanceWarning);
-static_assert((int32)EBlueprintMessageSeverity::Warning == EMessageSeverity::Warning);
-static_assert((int32)EBlueprintMessageSeverity::Info == EMessageSeverity::Info);
+static_assert(static_cast<int32>(EBlueprintMessageSeverity::Error) == EMessageSeverity::Error);
+static_assert(static_cast<int32>(EBlueprintMessageSeverity::PerformanceWarning) == EMessageSeverity::PerformanceWarning);
+static_assert(static_cast<int32>(EBlueprintMessageSeverity::Warning) == EMessageSeverity::Warning);
+static_assert(static_cast<int32>(EBlueprintMessageSeverity::Info) == EMessageSeverity::Info);
 
 /**
  * Struct representing a message token factory registration
@@ -85,6 +93,26 @@ struct BLUEPRINTMESSAGE_API FMessageTokenFactoryRegistration
 	FMessageTokenFactoryRegistration() = default;
 	FMessageTokenFactoryRegistration(UFunction* Function);
 
+	UClass* GetFactoryClass() const
+	{
+		return FactoryClass.Get();
+	}
+
+	const FName& GetFunctionName() const
+	{
+		return FunctionName;
+	}
+
+	UFunction* GetFactoryFunction() const
+	{
+		return FactoryFunction.Get();
+	}
+
+	/**
+	 * Is registration valid (points to valid function)
+	 */
+	bool IsValid() const;
+
 	/**
 	 * Does the function matches factory standard.
 	 *
@@ -94,20 +122,22 @@ struct BLUEPRINTMESSAGE_API FMessageTokenFactoryRegistration
 	 * - Pure
 	 * - Returns FBlueprintMessageToken
 	 */
-	static bool IsTokenFactoryFunction(UFunction* Function);
+	 static bool IsTokenFactoryFunction(UFunction* Function);
 
 	/**
 	 *
 	 */
 	static void GetRegisteredFactories(TArray<FMessageTokenFactoryRegistration>& OutArray);
 
-	friend bool operator==(const FMessageTokenFactoryRegistration& Lhs, const FMessageTokenFactoryRegistration& RHS)
+	bool operator==(const FMessageTokenFactoryRegistration& RHS) const
 	{
-		return Lhs.FactoryClass == RHS.FactoryClass
-			&& Lhs.FunctionName == RHS.FunctionName;
+		return FactoryClass == RHS.FactoryClass
+			&& FunctionName == RHS.FunctionName;
 	}
 
-public:
+private:
+	/* */
+	TWeakObjectPtr<UFunction> FactoryFunction;
 	/* */
 	TWeakObjectPtr<UClass> FactoryClass;
 	/* */

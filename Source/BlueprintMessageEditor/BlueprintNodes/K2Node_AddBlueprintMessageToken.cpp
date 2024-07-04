@@ -91,7 +91,8 @@ UFunction* UK2Node_AddBlueprintMessageToken::GetFactoryFunction() const
 
 FText UK2Node_AddBlueprintMessageToken::GetMenuCategory() const
 {
-	return GetDefaultCategoryForFunction(GetTargetFunction(), FText::GetEmpty());
+	return INVTEXT("Utilities|MessageLog|Tokens");
+	//return GetDefaultCategoryForFunction(GetTargetFunction(), FText::GetEmpty());
 }
 
 FText UK2Node_AddBlueprintMessageToken::GetTokenTitle() const
@@ -162,12 +163,15 @@ void UK2Node_AddBlueprintMessageToken::GetMenuActions(FBlueprintActionDatabaseRe
 
 		for (FMessageTokenFactoryRegistration const& FactoryRegistration : Registrations)
 		{
+			if (!FactoryRegistration.IsValid())
+				continue;
+
 			UBlueprintNodeSpawner* NodeSpawner = UBlueprintNodeSpawner::Create(GetClass());
 			check(NodeSpawner != nullptr);
 			NodeSpawner->CustomizeNodeDelegate = UBlueprintNodeSpawner::FCustomizeNodeDelegate::CreateLambda([FactoryRegistration](UEdGraphNode* Node, bool bIsTemplate)
 			{
 				UK2Node_AddBlueprintMessageToken* NodeImpl = CastChecked<UK2Node_AddBlueprintMessageToken>(Node);
-				NodeImpl->FactoryReference.SetExternalMember(FactoryRegistration.FunctionName, FactoryRegistration.FactoryClass.Get());
+				NodeImpl->FactoryReference.SetExternalMember(FactoryRegistration.GetFunctionName(), FactoryRegistration.GetFactoryClass());
 			});
 			InActionRegistrar.AddBlueprintAction(ActionKey, NodeSpawner);
 		}

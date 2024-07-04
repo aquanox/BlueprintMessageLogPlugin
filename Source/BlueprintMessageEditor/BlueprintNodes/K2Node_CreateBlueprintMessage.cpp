@@ -34,6 +34,11 @@ void UK2Node_CreateBlueprintMessage::AllocateDefaultPins()
 
 FName UK2Node_CreateBlueprintMessage::GetPinName(int32 PinIndex) const
 {
+	return *FString::Printf(TEXT("Token[%d]"), PinIndex);
+}
+
+FName UK2Node_CreateBlueprintMessage::GetArrayPinName(int32 PinIndex) const
+{
 	return *FString::Printf(TEXT("[%d]"), PinIndex);
 }
 
@@ -67,6 +72,11 @@ void UK2Node_CreateBlueprintMessage::InteractiveAddInputPin()
 {
 	FScopedTransaction Transaction(NSLOCTEXT("BlueprintMessage", "AddPinTx", "Add Pin"));
 	AddInputPin();
+}
+
+FText UK2Node_CreateBlueprintMessage::GetNodeTitle(ENodeTitleType::Type TitleType) const
+{
+	return Super::GetNodeTitle(TitleType);
 }
 
 void UK2Node_CreateBlueprintMessage::AddInputPin()
@@ -118,9 +128,23 @@ void UK2Node_CreateBlueprintMessage::RemoveInputPin(UEdGraphPin* Pin)
 	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(GetBlueprint());
 }
 
+TArray<UEdGraphPin*> UK2Node_CreateBlueprintMessage::GetDynamicPins() const
+{
+	TArray<UEdGraphPin*> DynamicPins;
+	for (UEdGraphPin* Pin : Pins)
+	{
+		if (IsDynamicInputPin(Pin))
+		{
+			DynamicPins.Add(Pin);
+		}
+	}
+	return DynamicPins;
+}
+
 FText UK2Node_CreateBlueprintMessage::GetMenuCategory() const
 {
-	return Super::GetMenuCategory();
+	return INVTEXT("Utilities|MessageLog");
+	//return Super::GetMenuCategory();
 }
 
 void UK2Node_CreateBlueprintMessage::GetMenuActions(FBlueprintActionDatabaseRegistrar& InActionRegistrar) const
@@ -172,16 +196,25 @@ void UK2Node_CreateBlueprintMessage::GetNodeContextMenuActions(UToolMenu* Menu, 
 	}
 }
 
-void UK2Node_CreateBlueprintMessage::ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph)
+void UK2Node_CreateBlueprintMessage::ValidateNodeDuringCompilation(FCompilerResultsLog& MessageLog) const
 {
-	TArray<UEdGraphPin*> DynamicPins;
-	for (UEdGraphPin* Pin : Pins)
+	Super::ValidateNodeDuringCompilation(MessageLog);
+
+#if 0
+	TArray<UEdGraphPin*> DynamicPins = GetDynamicPins();
+	for (UEdGraphPin* DynamicPin : DynamicPins)
 	{
-		if (IsDynamicInputPin(Pin))
+		if (DynamicPin->LinkedTo.IsEmpty())
 		{
-			DynamicPins.Add(Pin);
+			MessageLog.Warning(TEXT("Node @@ has unused token pin '{0}'."), this, *DynamicPin->GetName());
 		}
 	}
+#endif
+}
+
+void UK2Node_CreateBlueprintMessage::ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph)
+{
+	TArray<UEdGraphPin*> DynamicPins = GetDynamicPins();
 
 	if (!DynamicPins.Num())
 	{
@@ -207,6 +240,7 @@ void UK2Node_CreateBlueprintMessage::ExpandNode(FKismetCompilerContext& Compiler
 	CreateNode->AllocateDefaultPins();
 	CompilerContext.MessageLog.NotifyIntermediateObjectCreation(CreateNode, this);
 
+	// Move fixed pins to inner
 	bIsErrorFree &= MovePinLinksToIntermediate(this, UEdGraphSchema_K2::PN_Execute, CreateNode, UEdGraphSchema_K2::PN_Execute);
 	bIsErrorFree &= MovePinLinksToIntermediate(this, TEXT("LogCategory"), CreateNode, TEXT("LogCategory"));
 	bIsErrorFree &= MovePinLinksToIntermediate(this, TEXT("Severity"), CreateNode, TEXT("Severity"));
@@ -239,7 +273,7 @@ void UK2Node_CreateBlueprintMessage::ExpandNode(FKismetCompilerContext& Compiler
 	for (int32 Index = 0; Index < DynamicPins.Num(); ++Index)
 	{
 		// Find the input pin on the "Make Array" node by index and link it to the literal string
-		UEdGraphPin* ArrayIn = MakeArrayNode->FindPinChecked(GetPinName(Index));
+		UEdGraphPin* ArrayIn = MakeArrayNode->FindPinChecked(MakeArrayNode->GetPinName(Index));
 
 		bIsErrorFree &= CompilerContext.MovePinLinksToIntermediate(*DynamicPins[Index], *ArrayIn).CanSafeConnect();
 	}
@@ -251,7 +285,7 @@ void UK2Node_CreateBlueprintMessage::ExpandNode(FKismetCompilerContext& Compiler
 
 	if (!bIsErrorFree)
 	{
-		CompilerContext.MessageLog.Error(*LOCTEXT("InternalConnectionError", "BaseAsyncTask: Internal connection error. @@").ToString(), this);
+		CompilerContext.MessageLog.Error(*LOCTEXT("InternalConnectionError", "Internal connection error. @@").ToString(), this);
 	}
 
 	// orphan current node

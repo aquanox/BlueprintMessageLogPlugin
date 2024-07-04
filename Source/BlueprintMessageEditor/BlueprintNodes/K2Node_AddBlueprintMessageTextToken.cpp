@@ -699,7 +699,8 @@ void UK2Node_AddBlueprintMessageTextToken::GetMenuActions(FBlueprintActionDataba
 
 FText UK2Node_AddBlueprintMessageTextToken::GetMenuCategory() const
 {
-	return GetDefaultCategoryForFunction(GetInnerFunction(), FText::GetEmpty());
+	return INVTEXT("Utilities|MessageLog|Tokens");
+	//return GetDefaultCategoryForFunction(GetInnerFunction(), FText::GetEmpty());
 }
 
 UEdGraphPin* UK2Node_AddBlueprintMessageTextToken::FindInputPin(const FName& InPinName) const

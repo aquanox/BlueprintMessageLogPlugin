@@ -24,15 +24,20 @@ public:
 	virtual void AddInputPin() override;
 	virtual void RemoveInputPin(UEdGraphPin* Pin) override;
 
+	TArray<UEdGraphPin*> GetDynamicPins() const;
 	FName GetPinName(int32 PinIndex) const;
+	FName GetArrayPinName(int32 PinIndex) const;
 	bool IsDynamicInputPin(const UEdGraphPin* Pin) const;
 	void SyncPinNames();
 
 	void InteractiveAddInputPin();
 
+	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
 	virtual FText GetMenuCategory() const override;
 	virtual void GetMenuActions(FBlueprintActionDatabaseRegistrar& ActionRegistrar) const override;
 	virtual void GetNodeContextMenuActions(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const override;
+
+	virtual void ValidateNodeDuringCompilation(class FCompilerResultsLog& MessageLog) const override;
 
 	virtual void ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph) override;
 
