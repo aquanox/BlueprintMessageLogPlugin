@@ -133,7 +133,7 @@ UBlueprintMessage* UBlueprintMessage::ClearTokens()
 void UBlueprintMessage::Show()
 {
 #if WITH_EDITOR
-	const FName ActualCategory = Category.IsNone() ? TEXT("BlueprintLog") : Category;
+	const FName ActualCategory = Category.IsNone() ? UBlueprintMessageSettings::DefaultCategory : Category;
 	ShowImpl(ActualCategory, BuildMessage());
 #endif
 }
@@ -141,17 +141,17 @@ void UBlueprintMessage::Show()
 void UBlueprintMessage::ShowAndPrint(bool bPrintToScreen, bool bPrintToLog, FLinearColor TextColor, float Duration, const FName Key)
 {
 #if WITH_EDITOR
-	const FName ActualCategory = Category.IsNone() ? TEXT("BlueprintLog") : Category;
+	const FName ActualCategory = Category.IsNone() ? UBlueprintMessageSettings::DefaultCategory : Category;
 	TSharedRef<FTokenizedMessage> MessagePtr = BuildMessage();
 
 	ShowImpl(ActualCategory, MessagePtr);
 
-	FString LongMessage;
+	FStringBuilderBase LongMessage;
 	LongMessage.Append(ActualCategory.ToString());
 	LongMessage.Append(TEXT(": "));
 	LongMessage.Append(MessagePtr->ToText().ToString());
 
-	UKismetSystemLibrary::PrintText(nullptr, FText::FromString(LongMessage), bPrintToScreen, bPrintToLog, TextColor, Duration, Key);
+	UKismetSystemLibrary::PrintText(nullptr, FText::FromString(LongMessage.ToString()), bPrintToScreen, bPrintToLog, TextColor, Duration, Key);
 #endif
 }
 
@@ -167,10 +167,9 @@ void UBlueprintMessage::ShowImpl(const FName& InCategory, const TSharedRef<FToke
 #endif
 }
 
-
 TSharedRef<FTokenizedMessage> UBlueprintMessage::BuildMessage() const
 {
-	auto MessagePtr = FTokenizedMessage::Create(static_cast<EMessageSeverity::Type>(Severity), InitialMessage);
+	TSharedRef<FTokenizedMessage> MessagePtr = FTokenizedMessage::Create(static_cast<EMessageSeverity::Type>(Severity), InitialMessage);
 
 	for (const FBlueprintMessageToken& Token : Tokens)
 	{

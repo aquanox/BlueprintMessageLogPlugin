@@ -212,3 +212,52 @@ FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeEditorUtilityWidgetTok
 			bSingleUse)
 	);
 }
+
+FBlueprintMessageToken UBlueprintMessageTokenFactory::MakeTimestampToken(EBlueprintMessageTimestampType Type, bool bIncludeFrame)
+{
+	FStringBuilderBase Format;
+	switch (Type)
+	{
+	default:
+		checkNoEntry();
+		break;
+	case EBlueprintMessageTimestampType::SinceGStartTime:
+		{
+			const double RealTime = FPlatformTime::Seconds() - GStartTime;
+			Format.Appendf(TEXT("[%07.2f]"), RealTime);
+			break;
+		}
+	case EBlueprintMessageTimestampType::UTC:
+		{
+			FDateTime::UtcNow().ToString(TEXT("[%Y.%m.%d-%H.%M.%S:%s]"), Format);
+			break;
+		}
+	case EBlueprintMessageTimestampType::UTCShort:
+		{
+			FDateTime::UtcNow().ToString(TEXT("[%H.%M.%S:%s]"), Format);
+			break;
+		}
+	case EBlueprintMessageTimestampType::Local:
+		{
+			FDateTime::Now().ToString(TEXT("[%Y.%m.%d-%H.%M.%S:%s]"), Format);
+			break;
+		}
+	case EBlueprintMessageTimestampType::LocalShort:
+		{
+			FDateTime::Now().ToString(TEXT("[%H.%M.%S:%s]"), Format);
+			break;
+		}
+	case EBlueprintMessageTimestampType::Timecode:
+		{
+			Format.Appendf(TEXT("[%s]"), *FApp::GetTimecode().ToString());
+			break;
+		}
+	}
+
+	if (bIncludeFrame)
+	{
+		Format.Appendf(TEXT("[%3llu]"), GFrameCounter % 1000);
+	}
+
+	return MakeTextToken(FText::FromString(Format.ToString()));
+}

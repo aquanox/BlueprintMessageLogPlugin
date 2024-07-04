@@ -26,7 +26,7 @@ public:
 	 * @returns message instance
 	 */
 	UFUNCTION(BlueprintCallable, DisplayName="Create Log Message", Category="Utilities|MessageLog", meta=(BlueprintInternalUseOnly=true))
-	static UBlueprintMessage* CreateBlueprintMessage(
+	static UPARAM(DisplayName="Message") UBlueprintMessage* CreateBlueprintMessage(
 		UPARAM(DisplayName="Category", meta=(GetOptions="GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
 		EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info);
 
@@ -40,7 +40,7 @@ public:
 	 * @returns message instance
 	 */
 	UFUNCTION(BlueprintCallable, DisplayName="Create Simple Log Message", Category="Utilities|MessageLog", meta=(AdvancedDisplay=3))
-	static UBlueprintMessage* CreateSimpleBlueprintMessage(
+	static UPARAM(DisplayName="Message") UBlueprintMessage* CreateSimpleBlueprintMessage(
 		UPARAM(DisplayName="Category", meta=(GetOptions="GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
 		EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info,
 		FText Message = INVTEXT(""),
@@ -82,7 +82,7 @@ public:
 	/**
 	 * Categories
 	 */
-	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly=true))
+	UFUNCTION(meta=(BlueprintInternalUseOnly=true))
 	static TArray<FName> GetAvailableCategories();
 
 	/**
@@ -108,7 +108,7 @@ public:
 	 *
 	 * @param bOpenLog Open Message Log window
 	 */
-	UFUNCTION(BlueprintCallable, Category="Utilities|MessageLog", meta=(AdvancedDisplay=0))
+	UFUNCTION(BlueprintCallable, Category="Utilities|MessageLog")
 	void Show();
 
 	/* Show message in message Log and print it on screen */

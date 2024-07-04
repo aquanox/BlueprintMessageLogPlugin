@@ -13,6 +13,23 @@ DECLARE_DYNAMIC_DELEGATE_RetVal(FString, FGetMessageDynamicString);
 
 DECLARE_DYNAMIC_DELEGATE(FBlueprintMessageActionDelegate);
 
+UENUM()
+enum class EBlueprintMessageTimestampType : uint8
+{
+	// Display log timestamps in seconds elapsed since GStartTime
+	SinceGStartTime,
+	// Display log timestamps in UTC
+	UTC,
+	// Display log timestamps in UTC
+	UTCShort,
+	// Display log timestamps in local time
+	Local,
+	// Display log timestamps in local time
+	LocalShort,
+	// Display log timestamps in timecode format
+	Timecode
+};
+
 /**
  * Message token factory
  */
@@ -164,7 +181,7 @@ public:
 	 * @see SMessageLogMessageListRow::HandleTutorialHyperlinkNavigate
 	 */
 	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
-	static FBlueprintMessageToken MakeTutorialToken(UPARAM(meta=(MetaClass="EditorTutorial")) TSoftObjectPtr<UBlueprint> Value);
+	static FBlueprintMessageToken MakeTutorialToken(UPARAM(meta=(AllowedClasses="/Script/IntroTutorials.EditorTutorial")) TSoftObjectPtr<UBlueprint> Value);
 
 	/**
 	 * @brief Create a token that represents a URL to Unreal Engine Documentation
@@ -212,6 +229,16 @@ public:
 	 * @note I wish SAssetPicker had MetaClass for Blueprints
 	 */
 	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
-	static FBlueprintMessageToken MakeEditorUtilityWidgetToken(UPARAM(meta=(AllowedClasses="EditorUtilityWidgetBlueprint")) TSoftObjectPtr<UBlueprint> Widget, FText ActionName = INVTEXT(""), FText Description = INVTEXT(""), bool bSingleUse = false);
+	static FBlueprintMessageToken MakeEditorUtilityWidgetToken(UPARAM(meta=(AllowedClasses="/Script/Blutility.EditorUtilityWidgetBlueprint")) TSoftObjectPtr<UBlueprint> Widget, FText ActionName = INVTEXT(""), FText Description = INVTEXT(""), bool bSingleUse = false);
+
+	/**
+	 * Create a token with formatted current timestamp
+	 *
+	 * @param Type Timestamp format
+	 * @param bIncludeFrame display frame counter
+	 * @return Token instance
+	 */
+	UFUNCTION(BlueprintPure, Category="Utilities|MessageLog|Factory", meta=(BlueprintThreadSafe, TokenFactoryFunction))
+	static FBlueprintMessageToken MakeTimestampToken(EBlueprintMessageTimestampType Type = EBlueprintMessageTimestampType::SinceGStartTime, bool bIncludeFrame = false);
 
 };
