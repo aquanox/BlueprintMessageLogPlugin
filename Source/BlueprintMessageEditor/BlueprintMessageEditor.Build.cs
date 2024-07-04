@@ -4,17 +4,23 @@ using UnrealBuildTool;
 
 public class BlueprintMessageEditor : ModuleRules
 {
+	private bool bStrictIncludesCheck = false;
+
 	public BlueprintMessageEditor(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		// Disable private/public structure
-		PrivateIncludePaths.Add(ModuleDirectory);
+		PublicIncludePaths.Add(ModuleDirectory);
 
-		if (Target.Configuration == UnrealTargetConfiguration.DebugGame)
+		// This is to emulate engine installation and verify includes during development
+		// Gives effect similar to BuildPlugin with -StrictIncludes
+		if (bStrictIncludesCheck)
 		{
-			bTreatAsEngineModule = true;
 			bUseUnity = false;
+			PCHUsage = PCHUsageMode.NoPCHs;
+			// Enable additional checks used for Engine modules
+			bTreatAsEngineModule = true;
 		}
 
 		PublicDependencyModuleNames.AddRange(new string[]

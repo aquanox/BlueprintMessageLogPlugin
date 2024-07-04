@@ -4,13 +4,14 @@ using UnrealBuildTool;
 
 public class BlueprintMessage : ModuleRules
 {
+	private bool bStrictIncludesCheck = false;
+
 	public BlueprintMessage(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		// Disable private/public structure
 		PublicIncludePaths.Add(ModuleDirectory);
-		PrivateIncludePaths.Add(ModuleDirectory);
 
 		if (Target.bBuildEditor)
 		{
@@ -18,10 +19,14 @@ public class BlueprintMessage : ModuleRules
 			PrivateIncludePaths.Add(EngineDir + "/Source/Developer/MessageLog/Private");
 		}
 
-		if (Target.Configuration == UnrealTargetConfiguration.DebugGame)
+		// This is to emulate engine installation and verify includes during development
+		// Gives effect similar to BuildPlugin with -StrictIncludes
+		if (bStrictIncludesCheck)
 		{
-			bTreatAsEngineModule = true;
 			bUseUnity = false;
+			PCHUsage = PCHUsageMode.NoPCHs;
+			// Enable additional checks used for Engine modules
+			bTreatAsEngineModule = true;
 		}
 
 		PublicDependencyModuleNames.AddRange(new string[]
