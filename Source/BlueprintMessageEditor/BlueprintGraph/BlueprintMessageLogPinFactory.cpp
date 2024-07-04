@@ -1,28 +1,25 @@
 ﻿// Copyright 2022, Aquanox.
-#include "BlueprintGraph/BlueprintMessageGraphPanelPinFactory.h"
+#include "BlueprintMessageLogPinFactory.h"
 
-#include "BlueprintGraph/SmartGraphPanelPinFactory.h"
-#include "BlueprintGraph/SmartGraphPanelPinFactoryMatchers.h"
+#include "SmartGraphPanelPinFactory.h"
+#include "SmartGraphPanelPinFactoryMatchers.h"
 #include "K2Node_CallFunction.h"
 #include "PropertyPathHelpers.h"
 #include "Kismet2/BlueprintEditorUtils.h"
 #include "SGraphPinNameList.h"
 #include "Slate/SGraphPinNameCombobox.h"
 
-TSharedPtr<FGraphPanelPinFactory> UBlueprintMessageGraphPanelPinFactory::CreateFactory() const
+void FBlueprintMessageLogPinFactory::Populate()
 {
-	auto Factory = MakeShared<FSmartGraphPanelPinFactory>();
-	Factory->CreateHandler(TEXT("GetOptionsFromMeta"))
+	CreateHandler(TEXT("GetOptionsFromMeta"))
 		.AddMatcher<FPinFactoryMatcher_Schema>(UEdGraphSchema_K2::StaticClass())
 		.AddMatcher<FPinFactoryMatcher_PinCategory>(UEdGraphSchema_K2::PC_Name)
 		.AddMatcher<FPinFactoryMatcher_Node>(UK2Node_CallFunction::StaticClass())
 		.AddMatcher<FPinFactoryMatcher_PinHasMetadata>(TEXT("GetOptions"))
-		.Handle(FGraphPinHandlerDelegate::CreateUObject(this, &ThisClass::CreateGetOptionsPin));
-
-	return Factory;
+		.Handle(FGraphPinHandlerDelegate::CreateSP(SharedThis(this), &FBlueprintMessageLogPinFactory::CreateGetOptionsPin));
 }
 
-TSharedPtr<SGraphPin> UBlueprintMessageGraphPanelPinFactory::CreateGetOptionsPin(UEdGraphPin* InPin) const
+TSharedPtr<SGraphPin> FBlueprintMessageLogPinFactory::CreateGetOptionsPin(UEdGraphPin* InPin) const
 {
 	static const FName MD_GetOptions(TEXT("GetOptions"));
 
@@ -54,7 +51,7 @@ TSharedPtr<SGraphPin> UBlueprintMessageGraphPanelPinFactory::CreateGetOptionsPin
 	return SNew(SGraphPinNameCombobox, InPin, Options);
 }
 
-bool UBlueprintMessageGraphPanelPinFactory::BuildSelectableOptions(TArray<UObject*>& SourceObjects, FString SourceFunctionName, TArray<TSharedPtr<FName>>& OutOptions) const
+bool FBlueprintMessageLogPinFactory::BuildSelectableOptions(TArray<UObject*>& SourceObjects, FString SourceFunctionName, TArray<TSharedPtr<FName>>& OutOptions) const
 {
 	if (SourceFunctionName.IsEmpty())
 	{

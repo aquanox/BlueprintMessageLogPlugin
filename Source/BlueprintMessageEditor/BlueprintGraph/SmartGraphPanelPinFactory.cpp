@@ -1,6 +1,6 @@
 ﻿// Copyright 2022, Aquanox.
 
-#include "BlueprintGraph/SmartGraphPanelPinFactory.h"
+#include "SmartGraphPanelPinFactory.h"
 
 bool FGraphPinMatcherCollection::Matches(UEdGraphPin& Pin) const
 {
@@ -44,8 +44,8 @@ TSharedPtr<SGraphPin> FSmartGraphPanelPinFactory::CreatePin(UEdGraphPin* Pin) co
 	return nullptr;
 }
 
-FGraphPinMatcherCollection& FSmartGraphPanelPinFactory::CreateHandler(const FString& InLabel)
+FGraphPinMatcherCollection& FSmartGraphPanelPinFactory::CreateHandler(const FName& InName)
 {
-	TSharedRef<FGraphPinMatcherCollection> NewHandler = MakeShared<FGraphPinMatcherCollection>(InLabel);
+	TSharedRef<FGraphPinMatcherCollection> NewHandler = MakeShared<FGraphPinMatcherCollection>(InName);
 	return *Handlers.Add_GetRef(NewHandler);
 }

@@ -25,8 +25,7 @@ using FGraphPinHandlerDelegate = TDelegate<TSharedPtr<SGraphPin>(UEdGraphPin*)>;
 
 struct FGraphPinMatcherCollection
 {
-	explicit FGraphPinMatcherCollection(const FString& Label)
-		: Label(Label)
+	explicit FGraphPinMatcherCollection(const FName& InName) : Name(InName)
 	{
 	}
 
@@ -71,7 +70,7 @@ struct FGraphPinMatcherCollection
 	}
 
 private:
-	FString Label;
+	FName Name;
 	TArray<TSharedRef<FGraphPanelPinMatcher>> Matchers;
 	FGraphPinHandlerDelegate Handler;
 };
@@ -85,10 +84,10 @@ public:
 	FSmartGraphPanelPinFactory();
 	/**
 	 * Create new handler with label
-	 * @param InLabel handler label
+	 * @param InName handler label
 	 * @return new handler instance
 	 */
-	FGraphPinMatcherCollection& CreateHandler(const FString& InLabel);
+	FGraphPinMatcherCollection& CreateHandler(const FName& InName);
 protected:
 	/**
 	 * Create pin widget for specified graph pin, if possible

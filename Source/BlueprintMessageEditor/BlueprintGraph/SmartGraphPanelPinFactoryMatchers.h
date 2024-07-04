@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "BlueprintGraph/SmartGraphPanelPinFactory.h"
+#include "SmartGraphPanelPinFactory.h"
 #include "EdGraph/EdGraphSchema.h"
 #include "K2Node.h"
 

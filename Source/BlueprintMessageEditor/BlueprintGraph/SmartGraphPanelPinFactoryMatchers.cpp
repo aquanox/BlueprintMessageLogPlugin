@@ -1,6 +1,6 @@
 ﻿// Copyright 2022, Aquanox.
 
-#include "BlueprintGraph/SmartGraphPanelPinFactoryMatchers.h"
+#include "SmartGraphPanelPinFactoryMatchers.h"
 
 bool FCustomPinFactoryMatcher::Matches(UEdGraphPin& InPin) const
 {

@@ -1,6 +1,7 @@
 ﻿// Copyright 2022, Aquanox.
-#include "BlueprintGraph/Slate/SGraphPinNameCombobox.h"
+#include "SGraphPinNameCombobox.h"
 
+#include "ScopedTransaction.h"
 #include "SGraphPinComboBox.h"
 
 void SGraphPinNameCombobox::Construct(const FArguments& InArgs, UEdGraphPin* InGraphPinObj, const TArray<TSharedPtr<FName>>& InNameList)
