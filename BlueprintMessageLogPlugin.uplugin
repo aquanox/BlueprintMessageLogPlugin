@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "0.1",
+	"VersionName": "0.2",
 	"FriendlyName": "Blueprint Message Log Plugin",
 	"Description": "Plugin that provides Blueprint nodes to interact with Editor Message Log",
 	"Category": "Editor",
