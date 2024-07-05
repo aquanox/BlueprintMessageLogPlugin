@@ -27,7 +27,7 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, DisplayName="Create Log Message", Category="Utilities|MessageLog", meta=(BlueprintInternalUseOnly=true))
 	static UPARAM(DisplayName="Message") UBlueprintMessage* CreateBlueprintMessage(
-		UPARAM(DisplayName="Category", meta=(GetOptions="GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
+		UPARAM(DisplayName="Category", meta=(GetOptionsSource="GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
 		EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info);
 
 	/**
@@ -41,7 +41,7 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, DisplayName="Create Simple Log Message", Category="Utilities|MessageLog", meta=(AdvancedDisplay=3))
 	static UPARAM(DisplayName="Message") UBlueprintMessage* CreateSimpleBlueprintMessage(
-		UPARAM(DisplayName="Category", meta=(GetOptions="GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
+		UPARAM(DisplayName="Category", meta=(GetOptionsSource="GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
 		EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info,
 		FText Message = INVTEXT(""),
 		bool bShow = false);
@@ -55,7 +55,7 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, DisplayName="Open Message Log", Category="Utilities|MessageLog")
 	static void MessageLogOpen(
-		UPARAM(DisplayName="Category", meta=(GetOptions="GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
+		UPARAM(DisplayName="Category", meta=(GetOptionsSource="GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
 		EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info,
 		bool bForce = false);
 
@@ -70,7 +70,7 @@ public:
 	UFUNCTION(BlueprintCallable, DisplayName="Notify Message Log", Category="Utilities|MessageLog")
 	static void MessageLogNotify(
 		FText Message = INVTEXT(""),
-		UPARAM(DisplayName="Category", meta=(GetOptions="GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
+		UPARAM(DisplayName="Category", meta=(GetOptionsSource="GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
 		EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info,
 		bool bForce = false);
 

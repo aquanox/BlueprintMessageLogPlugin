@@ -37,7 +37,7 @@ void SGraphPinNameCombobox::GenerateComboBoxIndexes(TArray<TSharedPtr<int32>>& O
 void SGraphPinNameCombobox::ComboBoxSelectionChanged(TSharedPtr<int32> NewSelection, ESelectInfo::Type /*SelectInfo*/)
 {
 	FName Name = NewSelection.IsValid() ? *NameList[*NewSelection] : NAME_None;
-	if (auto Schema = (GraphPinObj ? GraphPinObj->GetSchema() : NULL))
+	if (const UEdGraphSchema* Schema = (GraphPinObj ? GraphPinObj->GetSchema() : NULL))
 	{
 		FString NameAsString = Name.ToString();
 		if (GraphPinObj->GetDefaultAsString() != NameAsString)
@@ -52,24 +52,20 @@ void SGraphPinNameCombobox::ComboBoxSelectionChanged(TSharedPtr<int32> NewSelect
 
 FString SGraphPinNameCombobox::OnGetText() const
 {
-	const FString SelectedString = GraphPinObj->GetDefaultAsString();
-
-	TSharedPtr<FName> CurrentlySelectedName;
 	if (GraphPinObj)
 	{
 		// Preserve previous selection, or set to first in list
-		FName PreviousSelection = FName(*SelectedString);
-		for (TSharedPtr<FName> ListNamePtr : NameList)
+		FName PreviousSelection = FName(*GraphPinObj->GetDefaultAsString());
+		for (TSharedPtr<FName> const& ListNamePtr : NameList)
 		{
 			if (PreviousSelection == *ListNamePtr.Get())
 			{
-				CurrentlySelectedName = ListNamePtr;
-				break;
+				return ListNamePtr->ToString();
 			}
 		}
+		return PreviousSelection.ToString();
 	}
-
-	return FName::NameToDisplayString(CurrentlySelectedName->ToString(), false);
+	return TEXT("INVALID");
 }
 
 FText SGraphPinNameCombobox::OnGetFriendlyName(int32 EnumIndex) const

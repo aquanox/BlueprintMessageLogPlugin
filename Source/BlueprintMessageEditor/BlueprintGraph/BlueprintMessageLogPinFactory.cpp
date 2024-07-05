@@ -11,17 +11,17 @@
 
 void FBlueprintMessageLogPinFactory::Populate()
 {
-	CreateHandler(TEXT("GetOptionsFromMeta"))
+	CreateHandler(TEXT("GetOptionsSourceMeta"))
 		.AddMatcher<FPinFactoryMatcher_Schema>(UEdGraphSchema_K2::StaticClass())
 		.AddMatcher<FPinFactoryMatcher_PinCategory>(UEdGraphSchema_K2::PC_Name)
 		.AddMatcher<FPinFactoryMatcher_Node>(UK2Node_CallFunction::StaticClass())
-		.AddMatcher<FPinFactoryMatcher_PinHasMetadata>(TEXT("GetOptions"))
+		.AddMatcher<FPinFactoryMatcher_PinHasMetadata>(TEXT("GetOptionsSource"))
 		.Handle(FGraphPinHandlerDelegate::CreateSP(SharedThis(this), &FBlueprintMessageLogPinFactory::CreateGetOptionsPin));
 }
 
 TSharedPtr<SGraphPin> FBlueprintMessageLogPinFactory::CreateGetOptionsPin(UEdGraphPin* InPin) const
 {
-	static const FName MD_GetOptions(TEXT("GetOptions"));
+	static const FName MD_GetOptions(TEXT("GetOptionsSource"));
 
 	ensure(InPin->PinType.PinCategory == UEdGraphSchema_K2::PC_Name);
 
@@ -64,7 +64,7 @@ bool FBlueprintMessageLogPinFactory::BuildSelectableOptions(TArray<UObject*>& So
 		SourceObjects.Empty();
 		UFunction* GetOptionsFunction = FindObject<UFunction>(nullptr, *SourceFunctionName, true);
 
-		if (ensureMsgf(GetOptionsFunction && GetOptionsFunction->HasAnyFunctionFlags(EFunctionFlags::FUNC_Static), TEXT("Invalid GetOptions: %s"), *SourceFunctionName))
+		if (ensureMsgf(GetOptionsFunction && GetOptionsFunction->HasAnyFunctionFlags(EFunctionFlags::FUNC_Static), TEXT("Invalid GetOptionsSource: %s"), *SourceFunctionName))
 		{
 			UObject* GetOptionsCDO = GetOptionsFunction->GetOuterUClass()->GetDefaultObject();
 			SourceFunctionName = GetOptionsFunction->GetName();
