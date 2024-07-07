@@ -1,6 +1,6 @@
 ﻿// Copyright 2022, Aquanox.
 
-#include "BlueprintNodes/K2Node_AddBlueprintMessageTextToken.h"
+#include "K2Node_AddBlueprintMessageTextToken.h"
 
 #include "UObject/Package.h"
 #include "Kismet/KismetSystemLibrary.h"

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "K2Node.h"
+#include "EdGraphSchema_K2.h"
 #include "K2Node_AddPinInterface.h"
 #include "K2Node_CallFunction.h"
 #include "K2Node_CreateBlueprintMessage.generated.h"

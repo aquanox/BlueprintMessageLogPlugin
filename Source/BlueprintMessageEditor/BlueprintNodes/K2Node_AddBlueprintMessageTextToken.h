@@ -3,13 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EdGraphSchema_K2.h"
 #include "K2Node_CallFunction.h"
-#include "k2Node_AddBlueprintMessageTextToken.generated.h"
+#include "K2Node_AddBlueprintMessageTextToken.generated.h"
 
 /**
  *
  */
-UCLASS()
+UCLASS(MinimalAPI)
 class UK2Node_AddBlueprintMessageTextToken : public UK2Node_CallFunction
 {
 	GENERATED_BODY()

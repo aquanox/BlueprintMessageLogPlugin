@@ -3,6 +3,7 @@
 #include "BlueprintMessageSettings.h"
 #include "Modules/ModuleManager.h"
 #include "Misc/EngineVersionComparison.h"
+#include "Misc/CoreDelegates.h"
 #include "EdGraphUtilities.h"
 #include "MessageLogInitializationOptions.h"
 #include "MessageLogModule.h"
