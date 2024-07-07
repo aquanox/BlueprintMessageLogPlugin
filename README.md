@@ -1,17 +1,15 @@
 ## Blueprint Message Log Plugin for Unreal Engine
 
-Are you still printing plain text to output? Discover Message Log! Create rich interactive messages with different contents with little of blueprint.
+Blueprint Message Log Plugin provides bridge between Blueprints and Editor Message Log API to enhance debugging experience with interactive logging features. 
 
-Blueprint Message Plugin provides an easy bridge between Blueprints and Message Log API to open an era of interactive logging! 
+Each Message Log message represented by sequence of tokens that represent plain text (text, string, name) or can be interacted with (hyperlinks, references, actions, images).
 
-Each Message Log message represented by sequence of tokens that can be interacted with: hyperlinks, references, actions, images.
-
-Note: plugin is at experimental stage, things may change a lot.
+More details can be found in repo Wiki section.
 
 ## Features
 
  * Blueprint wrapper of Message Log API
- * Blueprint wrappers for tokens:
+ * Blueprint wrappers for builtin tokens:
    * FTextToken - plain text
    * FURLToken - hyperlink
    * FUObjectToken - reference to UObject
@@ -68,7 +66,7 @@ Message Log View:
 
 Please report any issues with GitHub Issues page for this repository.
 
-If you want to suggest changes, improvements or updates to the plugin use GitHub Pull Requests.
+If you want to suggest changes, improvements or updates to the plugin open an enhancement request issue or use GitHub Pull Requests.
 
 ## License
 
