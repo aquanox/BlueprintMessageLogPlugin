@@ -2,7 +2,7 @@
 
 set PLUGIN_PATH="%cd%\BlueprintMessageLogPlugin.uplugin"
 set RUNUAT_PATH="%EPIC_LIBRARY%\UE_%VERSION%\Engine\Build\BatchFiles\RunUAT.bat"
-set PACKAGE_PATH="%cd%\Intermediate\%VERSION%"
+set PACKAGE_PATH="%WORK_TEMP%\BMP_%VERSION%"
 
 set EXTRA_PARAMS= -StrictIncludes
 
