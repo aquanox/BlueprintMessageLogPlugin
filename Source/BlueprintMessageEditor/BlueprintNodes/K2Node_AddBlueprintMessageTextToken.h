@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "EdGraphSchema_K2.h"
 #include "K2Node_CallFunction.h"
+
 #include "K2Node_AddBlueprintMessageTextToken.generated.h"
 
 /**
@@ -103,13 +104,16 @@ private:
 	/** Returns a unique pin name to use for a pin */
 	FName GetUniquePinName();
 
-	UFunction* GetInnerFunction() const;
-
 private:
 	/** When adding arguments to the node, their names are placed here and are generated as pins during construction */
 	UPROPERTY()
 	TArray<FName> PinNames;
 
+	UEdGraphPin* CachedExecPin = nullptr;
+
 	/** Cached input pins lookup table */
 	TMap<FName, UEdGraphPin*> CachedInputPins;
+
+	UEdGraphPin* CachedThenPin = nullptr;
+	UEdGraphPin* CachedMessagePin = nullptr;
 };
