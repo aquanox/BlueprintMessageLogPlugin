@@ -26,7 +26,7 @@ More details can be found in repo Wiki section.
 
 ## Unreal Engine Versions
 
-Plugin is compatible with 5.0-5.4, ue5-main and can be modified to work with other engine versions.
+Plugin is compatible with 5.2+, ue5-main and can be modified to work with other engine versions.
 
 ## Examples
 
