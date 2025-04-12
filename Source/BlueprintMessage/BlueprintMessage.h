@@ -25,7 +25,7 @@ public:
 	 * @param Severity severity of this message
 	 * @returns message instance
 	 */
-	UFUNCTION(BlueprintCallable, DisplayName="Create Log Message", Category="Utilities|MessageLog", meta=(BlueprintInternalUseOnly=true))
+	UFUNCTION(BlueprintCallable, DisplayName="Create Log Message", Category="Utilities|MessageLog", meta=(BlueprintInternalUseOnly=true, Keywords="create message"))
 	static UPARAM(DisplayName="Message") UBlueprintMessage* CreateBlueprintMessage(
 		UPARAM(DisplayName="Category", meta=(GetOptionsSource="GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
 		EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info);
@@ -39,7 +39,7 @@ public:
 	 * @param bShow trigger show right after creation
 	 * @returns message instance
 	 */
-	UFUNCTION(BlueprintCallable, DisplayName="Create Simple Log Message", Category="Utilities|MessageLog", meta=(AdvancedDisplay=3))
+	UFUNCTION(BlueprintCallable, DisplayName="Create Simple Log Message", Category="Utilities|MessageLog", meta=(AdvancedDisplay=3, Keywords="create message"))
 	static UPARAM(DisplayName="Message") UBlueprintMessage* CreateSimpleBlueprintMessage(
 		UPARAM(DisplayName="Category", meta=(GetOptionsSource="GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
 		EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info,
@@ -79,6 +79,9 @@ public:
 	/* constructor */
 	UBlueprintMessage();
 
+	/* */
+	virtual ~UBlueprintMessage();
+
 	/**
 	 * Categories
 	 */
@@ -86,10 +89,16 @@ public:
 	static TArray<FName> GetAvailableCategories();
 
 	/**
-	 * Duplicate message and return its copy
+	 * Duplicate message and return its copy.
 	 */
 	UFUNCTION(BlueprintCallable, Category="Utilities|MessageLog")
 	UPARAM(DisplayName="Message") UBlueprintMessage* Duplicate();
+	
+	/**
+	 * Explicitly destroy message object and mark it as garbage
+	 */
+	UFUNCTION(BlueprintCallable, Category="Utilities|MessageLog")
+	void Destroy();
 
 	/* Add token to this message */
 	UFUNCTION(BlueprintCallable, meta=(AutoCreateRefTerm="Token"), Category="Utilities|MessageLog")
@@ -144,6 +153,9 @@ protected:
 	/** Should we mirror message log messages from this instance to the output log? */
 	UPROPERTY(BlueprintReadWrite, Category=Message, meta=(AllowPrivateAccess))
 	bool bSuppressLoggingToOutputLog = false;
+	/** Should message be automatically destroyed after Show() call? */
+	UPROPERTY(BlueprintReadWrite, Category=Message, meta=(AllowPrivateAccess))
+	bool bAutoDestroy = false;
 };
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBlueprintMessage, Log, All);

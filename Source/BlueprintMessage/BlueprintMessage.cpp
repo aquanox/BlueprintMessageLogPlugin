@@ -47,6 +47,12 @@ void UBlueprintMessage::MessageLogNotify(FText Message, FName Category, EBluepri
 
 UBlueprintMessage::UBlueprintMessage()
 {
+	UE_LOG(LogBlueprintMessage, Verbose, TEXT("Construct UBlueprintMessage at %p"), this);
+}
+
+UBlueprintMessage::~UBlueprintMessage()
+{
+	UE_LOG(LogBlueprintMessage, Verbose, TEXT("Destroy UBlueprintMessage at %p"), this);
 }
 
 TArray<FName> UBlueprintMessage::GetAvailableCategories()
@@ -58,9 +64,20 @@ TArray<FName> UBlueprintMessage::GetAvailableCategories()
 
 UBlueprintMessage* UBlueprintMessage::Duplicate()
 {
-	UBlueprintMessage* Object = CreateSimpleBlueprintMessage(Category, Severity, InitialMessage);
+	UBlueprintMessage* Object = NewObject<UBlueprintMessage>(GetTransientPackage(), UBlueprintMessage::StaticClass(), NAME_None, RF_Transient|RF_DuplicateTransient);
+	Object->Category = Category;
+	Object->Severity = Severity;
+	Object->InitialMessage = InitialMessage;
 	Object->Tokens = Tokens;
+	Object->bSuppressLoggingToOutputLog = bSuppressLoggingToOutputLog;
+	Object->bAutoDestroy = bAutoDestroy;
 	return Object;
+}
+
+void UBlueprintMessage::Destroy()
+{
+	Tokens.Empty();
+	MarkAsGarbage();
 }
 
 UBlueprintMessage* UBlueprintMessage::AddToken(const FBlueprintMessageToken& Token, FName Slot)
@@ -136,6 +153,11 @@ void UBlueprintMessage::Show()
 	const FName ActualCategory = Category.IsNone() ? UBlueprintMessageSettings::DefaultCategory : Category;
 	ShowImpl(ActualCategory, BuildMessage());
 #endif
+	
+	if (bAutoDestroy)
+	{
+		Destroy();
+	}
 }
 
 void UBlueprintMessage::ShowAndPrint(bool bPrintToScreen, bool bPrintToLog, FLinearColor TextColor, float Duration, const FName Key)
@@ -153,10 +175,17 @@ void UBlueprintMessage::ShowAndPrint(bool bPrintToScreen, bool bPrintToLog, FLin
 
 	UKismetSystemLibrary::PrintText(nullptr, FText::FromString(LongMessage.ToString()), bPrintToScreen, bPrintToLog, TextColor, Duration, Key);
 #endif
+	
+	if (bAutoDestroy)
+	{
+		Destroy();
+	}
 }
 
 void UBlueprintMessage::ShowImpl(const FName& InCategory, const TSharedRef<FTokenizedMessage>& InMessage) const
 {
+	UE_LOG(LogBlueprintMessage, Verbose, TEXT("Show UBlueprintMessage at %p to target %s with %d tokens"), this, *InCategory.ToString(), Tokens.Num());
+	
 #if WITH_EDITOR
 	{
 		FMessageLog Log(InCategory);
