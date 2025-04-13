@@ -147,6 +147,15 @@ FText UK2Node_CreateBlueprintMessage::GetMenuCategory() const
 	//return Super::GetMenuCategory();
 }
 
+FText UK2Node_CreateBlueprintMessage::GetKeywords() const
+{
+	if (UFunction* TargetFn = GetTargetFunction())
+	{
+		return UK2Node_CallFunction::GetKeywordsForFunction(TargetFn);
+	}
+	return Super::GetKeywords();
+}
+
 void UK2Node_CreateBlueprintMessage::GetMenuActions(FBlueprintActionDatabaseRegistrar& InActionRegistrar) const
 {
 	const UClass* ActionKey = GetClass();
