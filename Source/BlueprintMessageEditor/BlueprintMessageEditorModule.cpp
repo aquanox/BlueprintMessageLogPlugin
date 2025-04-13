@@ -21,6 +21,8 @@ IMPLEMENT_MODULE(FBlueprintMessageEditorModule, BlueprintMessageEditor);
 
 void FBlueprintMessageEditorModule::StartupModule()
 {
+	// Currently using GetOptionsSource pin metadata for categories
+	// As of 5.5 GetOptions supported on pins
 #if 1 || UE_VERSION_OLDER_THAN(5, 5, 0)
 	PinFactory = MakeShared<FBlueprintMessageLogPinFactory>();
 	PinFactory->Populate();
@@ -29,12 +31,12 @@ void FBlueprintMessageEditorModule::StartupModule()
 
 	FMessageLogModule& MessageLogModule = FModuleManager::LoadModuleChecked<FMessageLogModule>("MessageLog");
 
-	if (GetDefault<UBlueprintMessageSettings>()->bEnableMessageLogDisplay)
+	if (UBlueprintMessageSettings::Get()->bEnableMessageLogDisplay)
 	{
 		MessageLogModule.EnableMessageLogDisplay(true);
 	}
 
-	for (FBlueprintMessageLogCategory Category : GetDefault<UBlueprintMessageSettings>()->CustomCategories)
+	for (FBlueprintMessageLogCategory Category : UBlueprintMessageSettings::Get()->CustomCategories)
 	{
 		if (Category.Name.IsNone())
 		{
@@ -63,13 +65,6 @@ void FBlueprintMessageEditorModule::StartupModule()
 			MessageLogModule.RegisterLogListing(Category.Name, Category.DisplayName);
 		}
 	}
-
-	/*ISettingsModule& Settings = FModuleManager::GetModuleChecked<ISettingsModule>("Settings");
-	Settings.RegisterSettings("Editor", "Plugins", "BlueprintMessageLog",
-		INVTEXT("Blueprint Message Log"),
-		INVTEXT("MessageLog blueprint integration plugin settings"),
-		GetMutableDefault<UBlueprintMessageLogSettings>()
-	);*/
 }
 
 

@@ -5,7 +5,7 @@ using UnrealBuildTool;
 public class BlueprintMessage : ModuleRules
 {
 	private bool bStrictIncludesCheck = false;
-	private bool bUseDirtyHacks = false;
+	private bool bUseCategoryDiscovery = true;
 
 	public BlueprintMessage(ReadOnlyTargetRules Target) : base(Target)
 	{
@@ -14,16 +14,16 @@ public class BlueprintMessage : ModuleRules
 		// Disable private/public structure
 		PublicIncludePaths.Add(ModuleDirectory);
 
-		if (Target.bBuildDeveloperTools)
+		if (Target.bBuildDeveloperTools && Target.bBuildEditor)
 		{
 			PublicDependencyModuleNames.Add("MessageLog");
 
 			// Requires for category discovery from viewmodel
-			if (bUseDirtyHacks)
+			if (bUseCategoryDiscovery)
 			{
 				var EngineDir = System.IO.Path.GetFullPath(Target.RelativeEnginePath);
 				PrivateIncludePaths.Add(EngineDir + "/Source/Developer/MessageLog/Private");
-				PrivateDefinitions.Add("WITH_MESSAGELOG_HACKS=1");
+				PrivateDefinitions.Add("WITH_MESSAGELOG_DISCOVERY=1");
 			}
 		}
 

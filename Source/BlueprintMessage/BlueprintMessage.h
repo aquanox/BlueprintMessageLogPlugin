@@ -140,7 +140,8 @@ protected:
 
 	static UBlueprintMessage* CreateMessageImpl();
 
-	TSharedRef<FTokenizedMessage> BuildMessage() const;
+	using FTagToMessage = TPair<FName, TSharedRef<FTokenizedMessage>>;
+	FTagToMessage BuildMessage() const;
 	
 	void ShowImpl(const FName& InCategory, const TSharedRef<FTokenizedMessage>& InMessage) const;
 

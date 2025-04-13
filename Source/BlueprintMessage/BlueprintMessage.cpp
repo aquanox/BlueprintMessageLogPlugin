@@ -8,14 +8,29 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Logging/MessageLog.h"
 
-UBlueprintMessage* UBlueprintMessage::CreateBlueprintMessage(FName Category, EBlueprintMessageSeverity Severity)
+UBlueprintMessage* UBlueprintMessage::CreateMessageImpl()
 {
-	return CreateSimpleBlueprintMessage(Category, Severity, FText::GetEmpty(), false);
+	const UBlueprintMessageSettings* Settings = UBlueprintMessageSettings::Get();
+	
+	UBlueprintMessage* Object = NewObject<UBlueprintMessage>(GetTransientPackage(), UBlueprintMessage::StaticClass(), NAME_None, RF_Transient|RF_DuplicateTransient);
+	Object->Category = Settings->GetDefaultCategory();
+	Object->bSuppressLoggingToOutputLog = Settings->bDefaultSuppressLoggingToOutputLog;
+	Object->bAutoDestroy = Settings->bDefaultAutoDestroy;
+
+	return Object;
+}
+
+UBlueprintMessage* UBlueprintMessage::CreateBlueprintMessage(FName LogCategory, EBlueprintMessageSeverity Severity)
+{
+	UBlueprintMessage* Object = CreateMessageImpl();
+	Object->Category = LogCategory;
+	Object->Severity = Severity;
+	return Object;
 }
 
 UBlueprintMessage* UBlueprintMessage::CreateSimpleBlueprintMessage(FName LogCategory, EBlueprintMessageSeverity Severity, FText Message, bool bCallShow)
 {
-	UBlueprintMessage* Object = NewObject<UBlueprintMessage>(GetTransientPackage(), UBlueprintMessage::StaticClass(), NAME_None, RF_Transient|RF_DuplicateTransient);
+	UBlueprintMessage* Object = CreateMessageImpl();
 	Object->Category = LogCategory;
 	Object->Severity = Severity;
 	Object->InitialMessage = Message;
@@ -28,7 +43,7 @@ UBlueprintMessage* UBlueprintMessage::CreateSimpleBlueprintMessage(FName LogCate
 
 void UBlueprintMessage::MessageLogOpen(FName Category, EBlueprintMessageSeverity Severity, bool bForce)
 {
-	const FName ActualCategory = Category.IsNone() ? UBlueprintMessageSettings::DefaultCategory : Category;
+	const FName ActualCategory = Category.IsNone() ? UBlueprintMessageSettings::Get()->GetDefaultCategory() : Category;
 	FMessageLog(ActualCategory).Open(
 		static_cast<EMessageSeverity::Type>(Severity),
 		bForce
@@ -37,7 +52,7 @@ void UBlueprintMessage::MessageLogOpen(FName Category, EBlueprintMessageSeverity
 
 void UBlueprintMessage::MessageLogNotify(FText Message, FName Category, EBlueprintMessageSeverity Severity, bool bForce)
 {
-	const FName ActualCategory = Category.IsNone() ? UBlueprintMessageSettings::DefaultCategory : Category;
+	const FName ActualCategory = Category.IsNone() ? UBlueprintMessageSettings::Get()->GetDefaultCategory() : Category;
 	FMessageLog(ActualCategory).Notify(
 		Message,
 		static_cast<EMessageSeverity::Type>(Severity),
@@ -64,7 +79,7 @@ TArray<FName> UBlueprintMessage::GetAvailableCategories()
 
 UBlueprintMessage* UBlueprintMessage::Duplicate()
 {
-	UBlueprintMessage* Object = NewObject<UBlueprintMessage>(GetTransientPackage(), UBlueprintMessage::StaticClass(), NAME_None, RF_Transient|RF_DuplicateTransient);
+	UBlueprintMessage* Object = CreateMessageImpl();
 	Object->Category = Category;
 	Object->Severity = Severity;
 	Object->InitialMessage = InitialMessage;
@@ -150,8 +165,10 @@ UBlueprintMessage* UBlueprintMessage::ClearTokens()
 void UBlueprintMessage::Show()
 {
 #if WITH_EDITOR
-	const FName ActualCategory = Category.IsNone() ? UBlueprintMessageSettings::DefaultCategory : Category;
-	ShowImpl(ActualCategory, BuildMessage());
+	{
+		FTagToMessage TagToMessage = BuildMessage();
+		ShowImpl(TagToMessage.Key, TagToMessage.Value);
+	}
 #endif
 	
 	if (bAutoDestroy)
@@ -163,17 +180,18 @@ void UBlueprintMessage::Show()
 void UBlueprintMessage::ShowAndPrint(bool bPrintToScreen, bool bPrintToLog, FLinearColor TextColor, float Duration, const FName Key)
 {
 #if WITH_EDITOR
-	const FName ActualCategory = Category.IsNone() ? UBlueprintMessageSettings::DefaultCategory : Category;
-	TSharedRef<FTokenizedMessage> MessagePtr = BuildMessage();
+	{
+		FTagToMessage TagToMessage = BuildMessage();
 
-	ShowImpl(ActualCategory, MessagePtr);
+		ShowImpl(TagToMessage.Key, TagToMessage.Value);
 
-	FStringBuilderBase LongMessage;
-	LongMessage.Append(ActualCategory.ToString());
-	LongMessage.Append(TEXT(": "));
-	LongMessage.Append(MessagePtr->ToText().ToString());
+		FStringBuilderBase LongMessage;
+		LongMessage.Append(TagToMessage.Key.ToString());
+		LongMessage.Append(TEXT(": "));
+		LongMessage.Append(TagToMessage.Value->ToText().ToString());
 
-	UKismetSystemLibrary::PrintText(nullptr, FText::FromString(LongMessage.ToString()), bPrintToScreen, bPrintToLog, TextColor, Duration, Key);
+		UKismetSystemLibrary::PrintText(nullptr, FText::FromString(LongMessage.ToString()), bPrintToScreen, bPrintToLog, TextColor, Duration, Key);
+	}
 #endif
 	
 	if (bAutoDestroy)
@@ -191,13 +209,20 @@ void UBlueprintMessage::ShowImpl(const FName& InCategory, const TSharedRef<FToke
 		FMessageLog Log(InCategory);
 		Log.SuppressLoggingToOutputLog(bSuppressLoggingToOutputLog);
 		Log.AddMessage(InMessage);
-		// ~FMessageLog() -> Flush()
+		Log.Flush();
+		// ~FMessageLog()
 	}
 #endif
 }
 
-TSharedRef<FTokenizedMessage> UBlueprintMessage::BuildMessage() const
+UBlueprintMessage::FTagToMessage UBlueprintMessage::BuildMessage() const
 {
+	FName MessageCat = Category;
+	if (MessageCat.IsNone())
+	{
+		MessageCat = UBlueprintMessageSettings::Get()->GetDefaultCategory();
+	}
+	
 	TSharedRef<FTokenizedMessage> MessagePtr = FTokenizedMessage::Create(static_cast<EMessageSeverity::Type>(Severity), InitialMessage);
 
 	for (const FBlueprintMessageToken& Token : Tokens)
@@ -213,5 +238,5 @@ TSharedRef<FTokenizedMessage> UBlueprintMessage::BuildMessage() const
 		}
 	}
 
-	return MessagePtr;
+	return MakeTuple(MessageCat,  MessagePtr);
 }
