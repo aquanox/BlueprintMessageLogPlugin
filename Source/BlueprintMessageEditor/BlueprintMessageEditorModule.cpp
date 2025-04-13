@@ -36,6 +36,11 @@ void FBlueprintMessageEditorModule::StartupModule()
 
 	for (FBlueprintMessageLogCategory Category : GetDefault<UBlueprintMessageSettings>()->CustomCategories)
 	{
+		if (Category.Name.IsNone())
+		{
+			continue;
+		}
+		
 		if (Category.DisplayName.IsEmpty())
 		{
 			Category.DisplayName = FText::FromString(FName::NameToDisplayString(Category.Name.ToString(), false));
