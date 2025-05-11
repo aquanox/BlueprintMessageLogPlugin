@@ -100,37 +100,39 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Utilities|MessageLog")
 	void Destroy();
 
-	/* Add token to this message */
+	/** Add token to this message */
 	UFUNCTION(BlueprintCallable, meta=(AutoCreateRefTerm="Token"), Category="Utilities|MessageLog")
 	UPARAM(DisplayName="Message") UBlueprintMessage* AddToken(const FBlueprintMessageToken& Token, FName Slot = NAME_None);
 
-	/* Add multiple tokens to this message */
+	/** Add multiple tokens to this message */
 	UFUNCTION(BlueprintCallable, meta=(AutoCreateRefTerm="Tokens"), Category="Utilities|MessageLog")
 	UPARAM(DisplayName="Message") UBlueprintMessage* AddTokens(const TArray<FBlueprintMessageToken>& Tokens);
 
-	/* Clear all tokens in this message */
+	/** Clear all tokens in this message */
 	UFUNCTION(BlueprintCallable, Category="Utilities|MessageLog")
 	UPARAM(DisplayName="Message") UBlueprintMessage* ClearTokens();
 
-	/*
+	/**
 	 * Show message in Message Log
-	 *
-	 * @param bOpenLog Open Message Log window
 	 */
 	UFUNCTION(BlueprintCallable, Category="Utilities|MessageLog")
 	void Show();
 
-	/* Show message in message Log and print it on screen */
+	/** Show message in message Log and print it on screen */
 	UFUNCTION(BlueprintCallable, Category="Utilities|MessageLog")
 	void ShowAndPrint(bool bPrintToScreen = true, bool bPrintToLog = true, FLinearColor TextColor = FLinearColor(0.0, 0.66, 1.0), float Duration = 2.f, const FName Key = NAME_None);
 
-	/* Add a token slot with name */
+	/** Add a token slot with name */
 	UFUNCTION(BlueprintCallable, Category="Utilities|MessageLog")
 	UPARAM(DisplayName="Message") UBlueprintMessage* AddNamedSlot(FName Name);
 
-	/* Remove token slot with specified name */
+	/** Remove named slot token */
 	UFUNCTION(BlueprintCallable, Category="Utilities|MessageLog")
 	UPARAM(DisplayName="Message") UBlueprintMessage* RemoveNamedSlot(FName Name);
+
+	/** Set token to named slot, unlike AddToken this will not add a new token if slot was not found  */
+	UFUNCTION(BlueprintCallable, meta=(AutoCreateRefTerm="Token"), Category="Utilities|MessageLog")
+	UPARAM(DisplayName="Message") UBlueprintMessage* FillNamedSlot(FName Name, const FBlueprintMessageToken& Token);
 
 	/** Change severity for this message */
 	UFUNCTION(BlueprintCallable, Category="Utilities|MessageLog")

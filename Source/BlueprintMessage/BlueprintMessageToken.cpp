@@ -20,26 +20,13 @@ FBlueprintMessageToken::FBlueprintMessageToken(TSharedRef<IMessageToken>&& InTok
 {
 }
 
-FBlueprintMessageToken::FBlueprintMessageToken(TSharedRef<IMessageToken>&& InToken, TSharedRef<FBlueprintMessageTokenData>&& InCustomData)
-	: Instance(MoveTemp(InToken)), Data(MoveTemp(InCustomData))
+FBlueprintMessageToken& FBlueprintMessageToken::OnMessageTokenActivated(FOnBlueprintMessageTokenActivated&& Delegate)
 {
-}
-
-void FBlueprintMessageToken::OnMessageTokenActivated(FOnBlueprintMessageTokenActivated&& InDelegate)
-{
-	if (!Instance.IsValid())
+	if (ensure(Instance.IsValid()))
 	{
-		return;
+		Instance->OnMessageTokenActivated(Delegate);
 	}
-
-	Instance->OnMessageTokenActivated(FOnMessageTokenActivated::CreateLambda([Token = this, Delegate = MoveTemp(InDelegate)](const TSharedPtr<IMessageToken>& TokenInstance)
-	{
-		if (Token->Instance.IsValid())
-		{
-			ensure(TokenInstance == Token->Instance);
-			Delegate.Execute(*Token);
-		}
-	}));
+	return *this;
 }
 
 FMessageTokenFactoryRegistration::FMessageTokenFactoryRegistration(UFunction* Function)

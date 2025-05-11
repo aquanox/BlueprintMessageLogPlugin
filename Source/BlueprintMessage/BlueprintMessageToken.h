@@ -10,16 +10,7 @@
 class IMessageToken;
 
 /** Delegate used when clicking a message token */
-DECLARE_DELEGATE_OneParam(FOnBlueprintMessageTokenActivated, const struct FBlueprintMessageToken&);
-
-/**
- * Hack around message tokens being non-extensible and hardcoded in engine.
- * Inherit this struct to provide data to token and use constructor taking it
- */
-struct BLUEPRINTMESSAGE_API FBlueprintMessageTokenData : public TSharedFromThis<FBlueprintMessageTokenData>
-{
-public:
-};
+using FOnBlueprintMessageTokenActivated = FOnMessageTokenActivated;
 
 /**
  * Wrapper-container for generic message token to pass around in blueprint
@@ -30,29 +21,24 @@ struct BLUEPRINTMESSAGE_API FBlueprintMessageToken
 	GENERATED_BODY()
 public:
 	FBlueprintMessageToken() = default;
-	FBlueprintMessageToken(const FName& InSlot);
-	FBlueprintMessageToken(TSharedRef<IMessageToken>&& InToken);
-	FBlueprintMessageToken(TSharedRef<IMessageToken>&& InToken, TSharedRef<FBlueprintMessageTokenData>&& InCustomData);
-
-	bool operator==(const FName& Other) const { return Name == Other; }
+	explicit  FBlueprintMessageToken(const FName& InSlot);
+	explicit  FBlueprintMessageToken(TSharedRef<IMessageToken>&& InToken);
 
 	/* Get the type of this message token */
 	EMessageToken::Type GetType() const { return Instance.IsValid() ? Instance->GetType() : static_cast<EMessageToken::Type>(-1); }
-	/* Does this token have custom data present */
-	bool HasData() const { return Data.IsValid(); }
-	/* Get the custom data for this token of specific type */
-	template<typename T = FBlueprintMessageTokenData>
-	T& GetData() const { return StaticCastSharedPtr<T, FBlueprintMessageTokenData>(Data); }
-
+	/* Get slot name of this token */
+	const FName& GetName() const { return Name; }
+	/** Get real token instance */
+	TSharedPtr<IMessageToken> GetToken() const { return Instance; }
 	/** Set token activation processor */
-	void OnMessageTokenActivated(FOnBlueprintMessageTokenActivated&& Delegate);
-
+	FBlueprintMessageToken& OnMessageTokenActivated(FOnBlueprintMessageTokenActivated&& Delegate);
+protected:
+	friend class UBlueprintMessage;
+	
 	/* Token name */
 	FName Name;
 	/* Token instance */
 	TSharedPtr<IMessageToken> Instance;
-	/* Token custom data */
-	TSharedPtr<FBlueprintMessageTokenData> Data;
 };
 
 template<>

@@ -97,27 +97,29 @@ void UBlueprintMessage::Destroy()
 
 UBlueprintMessage* UBlueprintMessage::AddToken(const FBlueprintMessageToken& Token, FName Slot)
 {
-	// Token with nothing in it
-	if (Token.Name.IsNone() && !Token.Instance.IsValid())
-	{
-		return this;
-	}
-
-	// Simply add a new token
+	// No slot parameter set - add a new token
 	if (Slot.IsNone())
 	{
 		Tokens.Add(Token);
-		return this;
-	}
-
-	// Find slot and replace it with new token
-	if (FBlueprintMessageToken* SlotPtr = Tokens.FindByKey(Slot))
-	{
-		SlotPtr->Instance = Token.Instance;
 	}
 	else
-	{ // Add new token with slot identifier
-		Tokens.Add_GetRef(Token).Name = Slot;
+	{
+		// Find matching slots and set it with new token
+		bool bAnythingSet = false;
+		for (FBlueprintMessageToken& Item : Tokens)
+		{
+			if (Item.Name == Slot)
+			{
+				Item.Instance = Token.Instance;
+				bAnythingSet = true;
+			}
+		}
+
+		// This is a new token with slot name (compatibility with existing uses)
+		if (!bAnythingSet)
+		{
+			Tokens.Add_GetRef(Token).Name = Slot;
+		}
 	}
 
 	return this;
@@ -125,16 +127,17 @@ UBlueprintMessage* UBlueprintMessage::AddToken(const FBlueprintMessageToken& Tok
 
 UBlueprintMessage* UBlueprintMessage::AddTokens(const TArray<FBlueprintMessageToken>& InTokens)
 {
+	Tokens.Reserve(Tokens.Num() + InTokens.Num());
 	for (const FBlueprintMessageToken& Token : InTokens)
 	{
-		AddToken(Token);
+		Tokens.Add(Token);
 	}
 	return this;
 }
 
-UBlueprintMessage* UBlueprintMessage::AddNamedSlot(FName Slot)
+UBlueprintMessage* UBlueprintMessage::AddNamedSlot(FName Name)
 {
-	AddToken(FBlueprintMessageToken(Slot));
+	Tokens.Add(FBlueprintMessageToken(Name));
 	return this;
 }
 
@@ -147,6 +150,22 @@ UBlueprintMessage* UBlueprintMessage::RemoveNamedSlot(FName Name)
 			It.RemoveCurrent();
 		}
 	}
+	return this;
+}
+
+UBlueprintMessage* UBlueprintMessage::FillNamedSlot(FName Name, const FBlueprintMessageToken& Token)
+{
+	if (!Name.IsNone())
+	{
+		for (FBlueprintMessageToken& Item : Tokens)
+		{
+			if (Item.Name == Name)
+			{
+				Item.Instance = Token.Instance;
+			}
+		}
+	}
+
 	return this;
 }
 
