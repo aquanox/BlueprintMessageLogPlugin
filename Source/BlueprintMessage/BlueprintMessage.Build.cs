@@ -1,5 +1,6 @@
 // Copyright 2022, Aquanox.
 
+using System.IO;
 using UnrealBuildTool;
 
 public class BlueprintMessage : ModuleRules
@@ -21,8 +22,7 @@ public class BlueprintMessage : ModuleRules
 			// Requires for category discovery from viewmodel
 			if (bUseCategoryDiscovery)
 			{
-				var EngineDir = System.IO.Path.GetFullPath(Target.RelativeEnginePath);
-				PrivateIncludePaths.Add(EngineDir + "/Source/Developer/MessageLog/Private");
+				PrivateIncludePaths.Add(Path.Combine(EngineDirectory, "Source", "Developer", "MessageLog", "Private"));
 				PrivateDefinitions.Add("WITH_MESSAGELOG_DISCOVERY=1");
 			}
 		}
