@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
-	"Version": 1,
-	"VersionName": "1.1",
+	"Version": 120,
+	"VersionName": "1.2",
 	"FriendlyName": "Blueprint Message Log Plugin",
 	"Description": "Plugin that provides Blueprint nodes to interact with Editor Message Log",
 	"Category": "Editor",
@@ -9,6 +9,7 @@
 	"CreatedByURL": "https://github.com/aquanox/BlueprintMessagePlugin",
 	"DocsURL": "",
 	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/04214407950e42a7a30284eb2b94dfe9",
+	"FabURL": "com.epicgames.launcher://ue/fab/product/742876c7-2a32-47d2-9b23-8d0b430e7683",
 	"SupportURL": "https://github.com/aquanox/BlueprintMessagePlugin/issues",
 	"EngineVersion": "",
 	"CanContainContent": false,
