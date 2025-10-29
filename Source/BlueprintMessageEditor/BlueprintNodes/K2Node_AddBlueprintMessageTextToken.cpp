@@ -20,6 +20,7 @@
 #include "BlueprintActionDatabaseRegistrar.h"
 #include "BlueprintMessage.h"
 #include "BlueprintMessageTokenFactory.h"
+#include "Misc/EngineVersionComparison.h"
 
 #define LOCTEXT_NAMESPACE "K2Node_AddBlueprintMessageTextToken"
 
@@ -99,7 +100,7 @@ void UK2Node_AddBlueprintMessageTextToken::SynchronizeArgumentPinType(UEdGraphPi
 		if (bPinTypeChanged)
 		{
 			// Let the graph know to refresh
-			GetGraph()->NotifyNodeChanged(this);
+			NotifyGraphNodeChanged();
 
 			UBlueprint* Blueprint = GetBlueprint();
 			if (!Blueprint->bBeingCompiled)
@@ -159,7 +160,7 @@ void UK2Node_AddBlueprintMessageTextToken::PostEditChangeProperty(struct FProper
 		ReconstructNode();
 	}
 	Super::PostEditChangeProperty(PropertyChangedEvent);
-	GetGraph()->NotifyNodeChanged(this);
+	NotifyGraphNodeChanged();
 }
 
 void UK2Node_AddBlueprintMessageTextToken::PinConnectionListChanged(UEdGraphPin* Pin)
@@ -190,7 +191,7 @@ void UK2Node_AddBlueprintMessageTextToken::PinConnectionListChanged(UEdGraphPin*
 
 		if (bRemoved)
 		{
-			GetGraph()->NotifyGraphChanged();
+			NotifyGraphNodeChanged();
 		}
 
 		FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(GetBlueprint());
@@ -238,7 +239,7 @@ void UK2Node_AddBlueprintMessageTextToken::PinDefaultValueChanged(UEdGraphPin* P
 			}
 		}
 
-		GetGraph()->NotifyNodeChanged(this);
+		NotifyGraphNodeChanged();
 	}
 }
 
@@ -314,7 +315,7 @@ void UK2Node_AddBlueprintMessageTextToken::PostReconstructNode()
 
 			if (NumPinsFixedUp > 0)
 			{
-				GetGraph()->NotifyNodeChanged(this);
+				NotifyGraphNodeChanged();
 				FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(GetBlueprint());
 			}
 		}
@@ -642,7 +643,7 @@ void UK2Node_AddBlueprintMessageTextToken::AddArgumentPin()
 	PinNames.Add(PinName);
 
 	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(GetBlueprint());
-	GetGraph()->NotifyNodeChanged(this);
+	NotifyGraphNodeChanged();
 }
 
 void UK2Node_AddBlueprintMessageTextToken::RemoveArgument(int32 InIndex)
@@ -658,7 +659,7 @@ void UK2Node_AddBlueprintMessageTextToken::RemoveArgument(int32 InIndex)
 	PinNames.RemoveAt(InIndex);
 
 	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(GetBlueprint());
-	GetGraph()->NotifyNodeChanged(this);
+	NotifyGraphNodeChanged();
 }
 
 void UK2Node_AddBlueprintMessageTextToken::SetArgumentName(int32 InIndex, FName InName)
@@ -677,7 +678,7 @@ void UK2Node_AddBlueprintMessageTextToken::SwapArguments(int32 InIndexA, int32 I
 	PinNames.Swap(InIndexA, InIndexB);
 
 	ReconstructNode();
-	GetGraph()->NotifyNodeChanged(this);
+	NotifyGraphNodeChanged();
 
 	FBlueprintEditorUtils::MarkBlueprintAsModified(GetBlueprint());
 }
@@ -728,5 +729,15 @@ bool UK2Node_AddBlueprintMessageTextToken::IsPermanentPin(const UEdGraphPin* Pin
 		|| Pin == GetFormatPin()
 		|| Pin == GetExecPin();
 }
+
+void UK2Node_AddBlueprintMessageTextToken::NotifyGraphNodeChanged()
+{
+#if UE_VERSION_OLDER_THAN(5, 3, 0)
+	GetGraph()->NotifyGraphChanged();
+#else
+	GetGraph()->NotifyNodeChanged(this);
+#endif
+}
+
 
 #undef LOCTEXT_NAMESPACE

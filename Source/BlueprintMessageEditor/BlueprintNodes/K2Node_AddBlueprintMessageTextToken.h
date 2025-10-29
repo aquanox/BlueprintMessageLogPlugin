@@ -104,6 +104,8 @@ private:
 	/** Returns a unique pin name to use for a pin */
 	FName GetUniquePinName();
 
+	void NotifyGraphNodeChanged();
+
 private:
 	/** When adding arguments to the node, their names are placed here and are generated as pins during construction */
 	UPROPERTY()
