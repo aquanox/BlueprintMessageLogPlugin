@@ -228,8 +228,7 @@ void UBlueprintMessage::ShowImpl(const FName& InCategory, const TSharedRef<FToke
 		FMessageLog Log(InCategory);
 		Log.SuppressLoggingToOutputLog(bSuppressLoggingToOutputLog);
 		Log.AddMessage(InMessage);
-		Log.Flush();
-		// ~FMessageLog()
+		// ~FMessageLog() -> Log.Flush();
 	}
 #endif
 }
