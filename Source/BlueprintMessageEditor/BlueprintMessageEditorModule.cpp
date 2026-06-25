@@ -21,8 +21,13 @@ IMPLEMENT_MODULE(FBlueprintMessageEditorModule, BlueprintMessageEditor);
 
 void FBlueprintMessageEditorModule::StartupModule()
 {
+	if (IsRunningCommandlet())
+	{
+		return;
+	}
+
 	// Currently using GetOptionsSource pin metadata for categories
-	// As of 5.5 GetOptions supported on pins
+	// As of 5.5 GetOptions supported on pins, but for compatibility keep using custom meta
 #if 1 || UE_VERSION_OLDER_THAN(5, 5, 0)
 	PinFactory = MakeShared<FBlueprintMessageLogPinFactory>();
 	PinFactory->Populate();
@@ -42,7 +47,7 @@ void FBlueprintMessageEditorModule::StartupModule()
 		{
 			continue;
 		}
-		
+
 		if (Category.DisplayName.IsEmpty())
 		{
 			Category.DisplayName = FText::FromString(FName::NameToDisplayString(Category.Name.ToString(), false));
@@ -75,5 +80,4 @@ void FBlueprintMessageEditorModule::ShutdownModule()
 	PinFactory.Reset();
 #endif
 
-	FCoreDelegates::OnPostEngineInit.RemoveAll(this);
 }
