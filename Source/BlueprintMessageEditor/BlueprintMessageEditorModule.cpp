@@ -3,16 +3,18 @@
 #include "BlueprintMessageSettings.h"
 #include "Modules/ModuleManager.h"
 #include "Misc/EngineVersionComparison.h"
-#include "Misc/CoreDelegates.h"
 #include "EdGraphUtilities.h"
 #include "MessageLogInitializationOptions.h"
 #include "MessageLogModule.h"
 #include "BlueprintGraph/BlueprintMessageLogPinFactory.h"
 
+#define WITH_CUSTOM_GETOPTIONS  UE_VERSION_OLDER_THAN(5, 5, 0)
+
 struct FBlueprintMessageEditorModule : public FDefaultModuleImpl
 {
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
+	virtual bool SupportsDynamicReloading() override { return false; }
 
 	TSharedPtr<FBlueprintMessageLogPinFactory> PinFactory;
 };
@@ -21,14 +23,12 @@ IMPLEMENT_MODULE(FBlueprintMessageEditorModule, BlueprintMessageEditor);
 
 void FBlueprintMessageEditorModule::StartupModule()
 {
-	if (IsRunningCommandlet())
+	if (!GIsEditor || IsRunningCommandlet())
 	{
 		return;
 	}
 
-	// Currently using GetOptionsSource pin metadata for categories
-	// As of 5.5 GetOptions supported on pins, but for compatibility keep using custom meta
-#if 1 || UE_VERSION_OLDER_THAN(5, 5, 0)
+#if WITH_CUSTOM_GETOPTIONS
 	PinFactory = MakeShared<FBlueprintMessageLogPinFactory>();
 	PinFactory->Populate();
 	FEdGraphUtilities::RegisterVisualPinFactory(PinFactory);
@@ -43,7 +43,7 @@ void FBlueprintMessageEditorModule::StartupModule()
 
 	for (FBlueprintMessageLogCategory Category : UBlueprintMessageSettings::Get()->CustomCategories)
 	{
-		if (Category.Name.IsNone())
+		if (Category.Name.IsNone() || !Category.bAutoRegisterCategory)
 		{
 			continue;
 		}
@@ -72,12 +72,15 @@ void FBlueprintMessageEditorModule::StartupModule()
 	}
 }
 
-
 void FBlueprintMessageEditorModule::ShutdownModule()
 {
-#if 1 || UE_VERSION_OLDER_THAN(5, 5, 0)
+	if (!GIsEditor || IsRunningCommandlet())
+	{
+		return;
+	}
+
+#if WITH_CUSTOM_GETOPTIONS
 	FEdGraphUtilities::UnregisterVisualPinFactory(PinFactory);
 	PinFactory.Reset();
 #endif
-
 }

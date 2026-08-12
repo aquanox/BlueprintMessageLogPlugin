@@ -21,7 +21,11 @@ struct FBlueprintMessageLogCategory
 	/** Friendly name of the custom category */
 	UPROPERTY(EditAnywhere, Category=General)
 	FText DisplayName;
-	
+
+	/** Category would be automatically registered in engine */
+	UPROPERTY(EditAnywhere, Category=General)
+	bool bAutoRegisterCategory = true;
+
 	/** Name of the custom category */
 	UPROPERTY(EditAnywhere, Category=General)
 	bool bUseAdvancedSettings = false;
@@ -89,14 +93,20 @@ public:
 
 	// Helper for Default Category Combo
 	UFUNCTION()
-	TArray<FName> GetDefaultCategoryOptions();
+	TArray<FName> GetDefaultCategoryOptions() const;
+
 	// Helper for Selectable Categories Combo
 	UFUNCTION()
-	TArray<FName> GetSelectableCategoryOptions();
-	
-	void GetAvailableCategories(TArray<FName>& OutCategories) const;
+	TArray<FName> GetSelectableCategoryOptions() const;
 
-	void DiscoverExistingCategories(TArray<FName>& OutCategories) const;
+	// Helper for blueprint graph categories combo on pin
+	TArray<FName> GetGraphSelectableCategories() const;
+
+	UFUNCTION()
+	TArray<FName> GetDiscoveredCategories() const;
+
+private:
+	void DiscoverExistingCategories(TArray<FName>& OutCategories);
 
 public:
 

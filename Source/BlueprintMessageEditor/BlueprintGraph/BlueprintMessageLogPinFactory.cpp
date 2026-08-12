@@ -15,40 +15,36 @@ void FBlueprintMessageLogPinFactory::Populate()
 		.AddMatcher<FPinFactoryMatcher_Schema>(UEdGraphSchema_K2::StaticClass())
 		.AddMatcher<FPinFactoryMatcher_PinCategory>(UEdGraphSchema_K2::PC_Name)
 		.AddMatcher<FPinFactoryMatcher_Node>(UK2Node_CallFunction::StaticClass())
-		.AddMatcher<FPinFactoryMatcher_PinHasMetadata>(TEXT("GetOptionsSource"))
+		.AddMatcher<FPinFactoryMatcher_PinHasMetadata>(TEXT("GetOptions"))
 		.Handle(FGraphPinHandlerDelegate::CreateSP(SharedThis(this), &FBlueprintMessageLogPinFactory::CreateGetOptionsPin));
 }
 
 TSharedPtr<SGraphPin> FBlueprintMessageLogPinFactory::CreateGetOptionsPin(UEdGraphPin* InPin) const
 {
-	static const FName MD_GetOptions(TEXT("GetOptionsSource"));
+	check(InPin->PinType.PinCategory == UEdGraphSchema_K2::PC_Name);
 
-	ensure(InPin->PinType.PinCategory == UEdGraphSchema_K2::PC_Name);
+	UK2Node_CallFunction* CallFunctionNode = Cast<UK2Node_CallFunction>(InPin->GetOuter());
+	check(CallFunctionNode);
 
-	UObject* const Outer = Cast<UK2Node_CallFunction>(InPin->GetOuter());
-	ensure(Outer);
-
-	FString FunctionName;
-	TArray<UObject*> TargetObjects;
-
-	if (UK2Node_CallFunction* CallFunctionNode = Cast<UK2Node_CallFunction>(Outer))
+	UFunction* CallTargetFunction = CallFunctionNode->GetTargetFunction();
+	if (!CallTargetFunction || !CallTargetFunction->GetPathName().StartsWith(TEXT("/Script/BlueprintMessage")))
 	{
-		UFunction* CallTargetFunction = CallFunctionNode->GetTargetFunction();
-		FString PinMetaData = CallFunctionNode->GetPinMetaData(InPin->GetFName(), MD_GetOptions);
-		if (!PinMetaData.IsEmpty() && CallTargetFunction)
-		{
-			FunctionName = PinMetaData;
-			TargetObjects.Add(CallTargetFunction->GetOuterUClass()->GetDefaultObject());
-		}
-	}
-
-	TArray<TSharedPtr<FName>> Options;
-	if (!BuildSelectableOptions(TargetObjects, FunctionName, Options))
-	{
+		// restrict usage from other modules
 		return nullptr;
 	}
 
-	return SNew(SGraphPinNameCombobox, InPin, Options);
+	FString FunctionName = CallFunctionNode->GetPinMetaData(InPin->GetFName(), TEXT("GetOptions"));
+
+	TArray<UObject*> TargetObjects;
+	TargetObjects.Add(CallTargetFunction->GetOuterUClass()->GetDefaultObject());
+
+	TArray<TSharedPtr<FName>> Options;
+	if (BuildSelectableOptions(TargetObjects, FunctionName, Options))
+	{
+		return SNew(SGraphPinNameCombobox, InPin, Options);
+	}
+
+	return nullptr;
 }
 
 bool FBlueprintMessageLogPinFactory::BuildSelectableOptions(TArray<UObject*>& SourceObjects, FString SourceFunctionName, TArray<TSharedPtr<FName>>& OutOptions) const

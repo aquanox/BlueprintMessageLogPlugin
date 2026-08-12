@@ -27,7 +27,7 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, DisplayName="Create Log Message", Category="Utilities|MessageLog", meta=(BlueprintInternalUseOnly=true, Keywords="create message"))
 	static UPARAM(DisplayName="Message") UBlueprintMessage* CreateBlueprintMessage(
-		UPARAM(DisplayName="Category", meta=(GetOptionsSource="BlueprintMessage.BlueprintMessage.GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
+		UPARAM(DisplayName="Category", meta=(GetOptions="BlueprintMessage.BlueprintMessageLibrary.GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
 		EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info);
 
 	/**
@@ -41,38 +41,10 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, DisplayName="Create Simple Log Message", Category="Utilities|MessageLog", meta=(AdvancedDisplay=3, Keywords="create message"))
 	static UPARAM(DisplayName="Message") UBlueprintMessage* CreateSimpleBlueprintMessage(
-		UPARAM(DisplayName="Category", meta=(GetOptionsSource="BlueprintMessage.BlueprintMessage.GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
+		UPARAM(DisplayName="Category", meta=(GetOptions="BlueprintMessage.BlueprintMessageLibrary.GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
 		EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info,
 		FText Message = INVTEXT(""),
 		bool bShow = false);
-
-	/**
-	 * Opens the log for display to the user given certain conditions.
-	 *
-	 * @param LogCategory Log category name
-	 * @param Severity Only messages of higher severity than this filter will be considered when checking.
-	 * @param bForce Override the filter & log status & force the log to open.
-	 */
-	UFUNCTION(BlueprintCallable, DisplayName="Open Message Log", Category="Utilities|MessageLog")
-	static void MessageLogOpen(
-		UPARAM(DisplayName="Category", meta=(GetOptionsSource="BlueprintMessage.BlueprintMessage.GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
-		EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info,
-		bool bForce = false);
-
-	/**
-	 * Notify the user with a message if there are messages present.
-	 *
-	 * @param Message The notification message.
-	 * @param LogCategory Log category name
-	 * @param Severity Only messages of higher severity than this filter will be considered when checking.
-	 * @param bForce Notify anyway, even if the filters gives us no messages.
-	 */
-	UFUNCTION(BlueprintCallable, DisplayName="Notify Message Log", Category="Utilities|MessageLog")
-	static void MessageLogNotify(
-		FText Message = INVTEXT(""),
-		UPARAM(DisplayName="Category", meta=(GetOptionsSource="BlueprintMessage.BlueprintMessage.GetAvailableCategories")) FName LogCategory = TEXT("BlueprintLog"),
-		EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info,
-		bool bForce = false);
 
 public:
 
@@ -83,17 +55,11 @@ public:
 	virtual ~UBlueprintMessage();
 
 	/**
-	 * Categories
-	 */
-	UFUNCTION(meta=(BlueprintInternalUseOnly=true))
-	static TArray<FName> GetAvailableCategories();
-
-	/**
 	 * Duplicate message and return its copy.
 	 */
 	UFUNCTION(BlueprintCallable, Category="Utilities|MessageLog")
 	UPARAM(DisplayName="Message") UBlueprintMessage* Duplicate();
-	
+
 	/**
 	 * Explicitly destroy message object and mark it as garbage
 	 */
@@ -144,21 +110,26 @@ protected:
 
 	using FTagToMessage = TPair<FName, TSharedRef<FTokenizedMessage>>;
 	FTagToMessage BuildMessage() const;
-	
+
 	void ShowImpl(const FName& InCategory, const TSharedRef<FTokenizedMessage>& InMessage) const;
 
 	UPROPERTY()
 	FName Category = TEXT("BlueprintLog");
+
 	UPROPERTY()
 	EBlueprintMessageSeverity Severity = EBlueprintMessageSeverity::Info;
+
 	UPROPERTY()
 	FText InitialMessage;
+
 	/** Stream of tokens for this message */
 	UPROPERTY()
 	TArray<FBlueprintMessageToken> Tokens;
+
 	/** Should we mirror message log messages from this instance to the output log? */
 	UPROPERTY(BlueprintReadWrite, Category=Message, meta=(AllowPrivateAccess))
 	bool bSuppressLoggingToOutputLog = false;
+
 	/** Should message be automatically destroyed after Show() call? */
 	UPROPERTY(BlueprintReadWrite, Category=Message, meta=(AllowPrivateAccess))
 	bool bAutoDestroy = false;

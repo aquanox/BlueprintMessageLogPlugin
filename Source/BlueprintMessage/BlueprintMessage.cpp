@@ -11,7 +11,7 @@
 UBlueprintMessage* UBlueprintMessage::CreateMessageImpl()
 {
 	const UBlueprintMessageSettings* Settings = UBlueprintMessageSettings::Get();
-	
+
 	UBlueprintMessage* Object = NewObject<UBlueprintMessage>(GetTransientPackage(), UBlueprintMessage::StaticClass(), NAME_None, RF_Transient|RF_DuplicateTransient);
 	Object->Category = Settings->GetDefaultCategory();
 	Object->bSuppressLoggingToOutputLog = Settings->bDefaultSuppressLoggingToOutputLog;
@@ -41,40 +41,18 @@ UBlueprintMessage* UBlueprintMessage::CreateSimpleBlueprintMessage(FName LogCate
 	return Object;
 }
 
-void UBlueprintMessage::MessageLogOpen(FName Category, EBlueprintMessageSeverity Severity, bool bForce)
-{
-	const FName ActualCategory = Category.IsNone() ? UBlueprintMessageSettings::Get()->GetDefaultCategory() : Category;
-	FMessageLog(ActualCategory).Open(
-		static_cast<EMessageSeverity::Type>(Severity),
-		bForce
-	);
-}
-
-void UBlueprintMessage::MessageLogNotify(FText Message, FName Category, EBlueprintMessageSeverity Severity, bool bForce)
-{
-	const FName ActualCategory = Category.IsNone() ? UBlueprintMessageSettings::Get()->GetDefaultCategory() : Category;
-	FMessageLog(ActualCategory).Notify(
-		Message,
-		static_cast<EMessageSeverity::Type>(Severity),
-		bForce
-	);
-}
-
 UBlueprintMessage::UBlueprintMessage()
 {
+#if UE_BUILD_DEBUG
 	UE_LOG(LogBlueprintMessage, Verbose, TEXT("Construct UBlueprintMessage at %p"), this);
+#endif
 }
 
 UBlueprintMessage::~UBlueprintMessage()
 {
+#if UE_BUILD_DEBUG
 	UE_LOG(LogBlueprintMessage, Verbose, TEXT("Destroy UBlueprintMessage at %p"), this);
-}
-
-TArray<FName> UBlueprintMessage::GetAvailableCategories()
-{
-	TArray<FName> Result;
-	UBlueprintMessageSettings::Get()->GetAvailableCategories(Result);
-	return Result;
+#endif
 }
 
 UBlueprintMessage* UBlueprintMessage::Duplicate()
@@ -189,7 +167,7 @@ void UBlueprintMessage::Show()
 		ShowImpl(TagToMessage.Key, TagToMessage.Value);
 	}
 #endif
-	
+
 	if (bAutoDestroy)
 	{
 		Destroy();
@@ -212,7 +190,7 @@ void UBlueprintMessage::ShowAndPrint(bool bPrintToScreen, bool bPrintToLog, FLin
 		UKismetSystemLibrary::PrintText(nullptr, FText::FromString(LongMessage.ToString()), bPrintToScreen, bPrintToLog, TextColor, Duration, Key);
 	}
 #endif
-	
+
 	if (bAutoDestroy)
 	{
 		Destroy();
@@ -222,7 +200,7 @@ void UBlueprintMessage::ShowAndPrint(bool bPrintToScreen, bool bPrintToLog, FLin
 void UBlueprintMessage::ShowImpl(const FName& InCategory, const TSharedRef<FTokenizedMessage>& InMessage) const
 {
 	UE_LOG(LogBlueprintMessage, Verbose, TEXT("Show UBlueprintMessage at %p to target %s with %d tokens"), this, *InCategory.ToString(), Tokens.Num());
-	
+
 #if WITH_EDITOR
 	{
 		FMessageLog Log(InCategory);
@@ -240,7 +218,7 @@ UBlueprintMessage::FTagToMessage UBlueprintMessage::BuildMessage() const
 	{
 		MessageCat = UBlueprintMessageSettings::Get()->GetDefaultCategory();
 	}
-	
+
 	TSharedRef<FTokenizedMessage> MessagePtr = FTokenizedMessage::Create(static_cast<EMessageSeverity::Type>(Severity), InitialMessage);
 
 	for (const FBlueprintMessageToken& Token : Tokens)
